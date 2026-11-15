@@ -1,0 +1,34 @@
+<%- include('../partials/header', { titel }) %>
+<h1>Statistik</h1>
+<p class="text-schwach">Ausschließlich zuverlässig aus vorhandenen Messwerten berechnete Zahlen - keine Prognose/Hochrechnung (dafür siehe Diagramme).</p>
+
+<div class="karte">
+  <h2>Übersicht</h2>
+  <p><%= anzahlNutzer %> Benutzerkonto(en), <%= anzahlZaehler %> Zähler, <%= anzahlMesswerte %> Messwerte.</p>
+</div>
+
+<div class="karte">
+  <h2>Jahresverbrauch je Zählerart</h2>
+  <% if (jahresverbrauch.length === 0) { %>
+    <p class="text-schwach">Noch keine vollständigen Ablese-Intervalle vorhanden.</p>
+  <% } else { %>
+    <div class="tabelle-wrap">
+    <table class="tabelle">
+      <thead><tr><th>Zählerart</th><th>Jahr</th><th>Verbrauch</th><th>Ablese-Intervalle</th></tr></thead>
+      <tbody>
+        <% jahresverbrauch.forEach(z => { %>
+          <% z.jahre.forEach(j => { %>
+            <tr>
+              <td data-label="Zählerart"><%= z.meterType.label %><%= z.richtung ? (z.richtung === 'verbrauch' ? ' (Verbrauch)' : ' (Einspeisung)') : '' %><%= z.teil ? (z.teil === 'kwh' ? ' (kWh)' : ' (m³)') : '' %></td>
+              <td data-label="Jahr"><%= j.jahr %></td>
+              <td data-label="Verbrauch"><%= j.summe.toFixed(2) %> <%= z.meterType.unit %></td>
+              <td data-label="Ablese-Intervalle"><%= j.intervalle %></td>
+            </tr>
+          <% }) %>
+        <% }) %>
+      </tbody>
+    </table>
+    </div>
+  <% } %>
+</div>
+<%- include('../partials/footer') %>

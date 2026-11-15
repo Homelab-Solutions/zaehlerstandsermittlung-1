@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title><%= titel %> - <%= typeof productName !== 'undefined' ? productName : 'Zählwerk' %></title>
+<link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+<% if (typeof user !== 'undefined' && user) {
+  var pfadAktuell = typeof pfad !== 'undefined' ? pfad : '';
+%>
+<header class="kopf">
+  <div class="kopf-zeile">
+    <div class="kopf-titel"><a href="/">💧 <%= typeof productName !== 'undefined' ? productName : 'Zählwerk' %></a></div>
+    <button type="button" id="nav-umschalter" class="nav-umschalter" aria-expanded="false" aria-controls="hauptnav">
+      <span class="nav-umschalter-strich"></span>
+      <span class="nav-umschalter-strich"></span>
+      <span class="nav-umschalter-strich"></span>
+      <span class="verborgen-text">Menü</span>
+    </button>
+  </div>
+  <nav class="hauptnav" id="hauptnav">
+    <a href="/" class="<%= pfadAktuell === '/' ? 'aktiv' : '' %>">Dashboard</a>
+    <a href="/messwerte" class="<%= pfadAktuell === '/messwerte' ? 'aktiv' : '' %>">Messwerte erfassen</a>
+    <a href="/diagramme" class="<%= pfadAktuell === '/diagramme' ? 'aktiv' : '' %>">Diagramme</a>
+    <% if (user.role === 'admin') { %>
+    <a href="/zaehler" class="<%= pfadAktuell.startsWith('/zaehler') ? 'aktiv' : '' %>">Zählerverwaltung</a>
+    <a href="/admin" class="<%= pfadAktuell.startsWith('/admin') ? 'aktiv' : '' %>">Administration</a>
+    <% } %>
+    <div class="kopf-benutzer">
+      <span><%= user.email %> (<%= user.role %>)</span>
+      <form method="post" action="/logout" class="inline"><button type="submit" class="link-knopf">Abmelden</button></form>
+    </div>
+  </nav>
+</header>
+<script src="/static/js/nav.js"></script>
+<% } %>
+<main class="inhalt<%= typeof breit !== 'undefined' && breit ? ' inhalt-breit' : '' %>">

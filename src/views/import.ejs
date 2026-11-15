@@ -1,0 +1,70 @@
+<%- include('partials/header', { titel }) %>
+<h1>Import (Messwerte)</h1>
+<p class="text-schwach">Für Zähler-Stammdaten (Gruppen, Zählerarten, Zähler) ohne Messwerte - auch ohne vorhandene Messwerte importierbar: <a href="/admin/zaehler-stammdaten/import">Zähler-Stammdaten importieren</a>.</p>
+<% if (erfolg) { %><p class="meldung meldung-erfolg"><%= erfolg %></p><% } %>
+<% if (fehler) { %><p class="meldung meldung-fehler"><%= fehler %></p><% } %>
+
+<div class="karte">
+  <p>Unterstützte Formate: CSV, JSON, Excel (.xlsx). Spalten: Zählernummer, Zählerart, Datum, Wert, Einheit, Messart, Status, Bemerkung (keine Uhrzeit-Spalte).</p>
+  <p><strong>Pflichtfelder:</strong> Zählernummer (muss bei CSV/Excel zu einem vorhandenen Zähler passen), Datum, Wert. Optional/bedingt: Einheit (Standard: Einheit des Zählers), Status (abgelesen/geschätzt, Standard abgelesen), Bemerkung. <strong>Messart:</strong> bei Stromzählern optional (verbrauch/einspeisung, Standard verbrauch, je eine eigene Zeile zum selben Datum); bei Wärmemengenzählern Pflicht (kwh/m3, beide als eigene Zeile zum selben Datum); bei allen anderen Zählerarten leer lassen. <strong>Datum:</strong> TT.MM.JJJJ oder JJJJ-MM-TT. <strong>Wert:</strong> mit Komma als Dezimaltrennzeichen (z. B. 123,45).</p>
+  <p><strong>Vollständiger JSON-Export</strong> (Admin → Export → JSON, alle Daten): fehlende Zähler-Stammdaten (Zählergruppen, Zählerarten, Zähler) werden automatisch ergänzt, bevor die Messwerte zugeordnet werden - nützlich auf einem frischen oder zurückgesetzten System. Übernommen werden dabei ausschließlich Zähler-Stammdaten und Messwerte, keine Benutzerkonten/Fotos/Einstellungen (dafür: Admin → Vollbackup / Wiederherstellung) und keine Zählerwechsel-Verknüpfungen (müssten danach manuell in der Zählerverwaltung nachgetragen werden).</p>
+  <p><a href="/import/vorlage">Muster-Datei herunterladen (.xlsx)</a></p>
+  <form method="post" action="/import/vorschau" enctype="multipart/form-data" class="formular">
+    <label>Datei
+      <input type="file" name="datei" accept=".csv,.json,.xlsx" required>
+    </label>
+    <button type="submit">Vorschau erzeugen</button>
+  </form>
+</div>
+
+<% if (stammdatenPlan) { %>
+<div class="karte meldung-warnung-box">
+  <h2>Zähler-Stammdaten aus diesem Export</h2>
+  <p>Beim Übernehmen werden fehlende Stammdaten automatisch angelegt (bereits vorhandene Einträge gleichen Namens/Schlüssels/Nummer bleiben unverändert):</p>
+  <ul>
+    <li>Zählergruppen: <%= stammdatenPlan.neueGruppen.length %> neu von <%= stammdatenPlan.gesamtGruppen %> im Export<%= stammdatenPlan.neueGruppen.length ? ' (' + stammdatenPlan.neueGruppen.join(', ') + ')' : '' %></li>
+    <li>Zählerarten: <%= stammdatenPlan.neueTypen.length %> neu von <%= stammdatenPlan.gesamtTypen %> im Export<%= stammdatenPlan.neueTypen.length ? ' (' + stammdatenPlan.neueTypen.join(', ') + ')' : '' %></li>
+    <li>Zähler: <%= stammdatenPlan.neueZaehler.length %> neu von <%= stammdatenPlan.gesamtZaehler %> im Export<%= stammdatenPlan.neueZaehler.length ? ' (' + stammdatenPlan.neueZaehler.join(', ') + ')' : '' %></li>
+  </ul>
+</div>
+<% } %>
+
+<% if (vorschau) { %>
+<div class="karte">
+  <h2>Vorschau</h2>
+  <p>
+    Gesamt: <%= vorschau.summary.gesamt %> |
+    OK: <%= vorschau.summary.ok %> |
+    Warnungen: <%= vorschau.summary.warnung %> |
+    Fehler: <%= vorschau.summary.fehler %> |
+    Importierbar: <%= vorschau.summary.importierbar %>
+  </p>
+  <div class="tabelle-wrap">
+  <table class="tabelle">
+    <thead><tr><th>Zeile</th><th>Status</th><th>Zählernummer</th><th>Datum</th><th>Wert</th><th>Messart</th><th>Meldungen</th></tr></thead>
+    <tbody>
+      <% vorschau.zeilen.forEach(z => { %>
+        <tr class="zeile-<%= z.status %>">
+          <td data-label="Zeile"><%= z.zeile %></td>
+          <td data-label="Status"><%= z.status %><%= z.dublette ? ' (Dublette)' : '' %></td>
+          <td data-label="Zählernummer"><%= z.eingabe.zaehlernummer || '' %></td>
+          <td data-label="Datum"><%= z.eingabe.datum || '' %></td>
+          <td data-label="Wert"><%= z.eingabe.wert || '' %></td>
+          <td data-label="Messart"><%= z.eingabe.messart || '' %></td>
+          <td data-label="Meldungen"><%= z.meldungen.join(' ') %></td>
+        </tr>
+      <% }) %>
+    </tbody>
+  </table>
+  </div>
+  <% if (vorschau.summary.importierbar > 0) { %>
+  <form method="post" action="/import/uebernehmen">
+    <input type="hidden" name="token" value="<%= token %>">
+    <button type="submit">Import übernehmen (<%= vorschau.summary.importierbar %> Zeile(n))</button>
+  </form>
+  <% } else { %>
+  <p class="text-schwach">Keine importierbaren Zeilen vorhanden.</p>
+  <% } %>
+</div>
+<% } %>
+<%- include('partials/footer') %>

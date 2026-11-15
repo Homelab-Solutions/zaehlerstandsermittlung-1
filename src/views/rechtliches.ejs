@@ -1,0 +1,22 @@
+<%- include('partials/header', { titel }) %>
+<h1>Rechtliches</h1>
+<p class="text-schwach">Die folgenden Texte sind vom Betreiber editierbare Vorlagen (Admin → Rechtliches) und keine Rechtsberatung; sie wurden nicht rechtlich geprüft.</p>
+
+<div class="karte" id="impressum">
+  <h2>Impressum</h2>
+  <div class="rechtstext"><%= impressum %></div>
+</div>
+
+<div class="karte" id="datenschutz">
+  <h2>Datenschutz</h2>
+  <div class="rechtstext"><%= datenschutz %></div>
+</div>
+
+<% if (sonstiges && sonstiges.trim()) { %>
+<div class="karte" id="sonstiges">
+  <h2>Weitere Hinweise</h2>
+  <div class="rechtstext"><%= sonstiges %></div>
+</div>
+<% } %>
+
+<%- include('partials/footer') %>

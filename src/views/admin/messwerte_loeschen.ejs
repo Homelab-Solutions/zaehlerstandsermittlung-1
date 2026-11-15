@@ -1,0 +1,18 @@
+<%- include('../partials/header', { titel }) %>
+<h1>Messwerte löschen</h1>
+<% if (fehler) { %><p class="meldung meldung-fehler"><%= fehler %></p><% } %>
+
+<div class="karte meldung-warnung-box">
+  <p><strong>Achtung:</strong> Dieser Vorgang löscht unwiderruflich <strong><%= anzahlMesswerte %> Messwert(e)</strong> und die <strong><%= anzahlFotos %> dazugehörige(n) Foto(s)</strong>. Zähler, Zählergruppen, Zählerarten, Benutzerkonten, Einstellungen und das Audit-Protokoll bleiben erhalten.</p>
+  <p>Für ein vollständiges Zurücksetzen (inkl. Zähler) siehe stattdessen <a href="/admin/reset">Datenbank zurücksetzen</a>. Vor dem Löschen empfiehlt sich ein <a href="/export">Export</a> der aktuellen Messwerte.</p>
+</div>
+
+<div class="karte">
+  <form method="post" action="/admin/messwerte-loeschen" class="formular">
+    <label>Bitte exakt "<%= bestaetigungstext %>" eingeben:
+      <input type="text" name="bestaetigungstext" required>
+    </label>
+    <button type="submit" class="knopf-gefahr">Alle Messwerte jetzt endgültig löschen</button>
+  </form>
+</div>
+<%- include('../partials/footer') %>

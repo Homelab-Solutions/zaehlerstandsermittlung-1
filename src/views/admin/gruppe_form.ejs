@@ -1,0 +1,13 @@
+<%- include('../partials/header', { titel }) %>
+<h1><%= titel %></h1>
+<% if (fehler) { %><p class="meldung meldung-fehler"><%= fehler %></p><% } %>
+
+<div class="karte">
+  <form method="post" action="<%= gruppe ? ('/admin/gruppen/' + gruppe.id) : '/admin/gruppen' %>" class="formular">
+    <label>Name
+      <input type="text" name="name" value="<%= gruppe ? gruppe.name : '' %>" required>
+    </label>
+    <button type="submit">Speichern</button>
+  </form>
+</div>
+<%- include('../partials/footer') %>

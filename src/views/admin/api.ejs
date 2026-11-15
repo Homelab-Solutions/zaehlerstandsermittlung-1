@@ -1,0 +1,46 @@
+<%- include('../partials/header', { titel }) %>
+<h1>Externe Lese-API</h1>
+<p class="text-schwach">Ausschließlich lesender, versionierter Zugriff (<code>/api/v1/zaehler</code>, <code>/api/v1/messwerte</code>) für ein späteres externes Nebenkostenabrechnungsprogramm. Standardmäßig deaktiviert. Details, Beispielaufrufe und Fehlercodes stehen im README.</p>
+<% if (erfolg) { %><p class="meldung meldung-erfolg"><%= erfolg %></p><% } %>
+<% if (fehler) { %><p class="meldung meldung-fehler"><%= fehler %></p><% } %>
+
+<% if (neuerSchluessel) { %>
+<div class="karte meldung-warnung-box">
+  <h2>Neuer Schlüssel</h2>
+  <p>Dieser Schlüssel wird <strong>nur jetzt einmal</strong> angezeigt und danach nicht mehr im Klartext gespeichert. Jetzt sicher in das externe Programm übernehmen:</p>
+  <p><code class="details-code"><%= neuerSchluessel %></code></p>
+  <p class="text-schwach">Verwendung: HTTP-Header <code>Authorization: Bearer &lt;Schlüssel&gt;</code>. Niemals als URL-Parameter übertragen.</p>
+</div>
+<% } %>
+
+<div class="karte">
+  <h2>Status</h2>
+  <p>API ist <strong><%= enabled ? 'aktiviert' : 'deaktiviert' %></strong>.</p>
+  <p>Schlüssel: <strong><%= hatSchluessel ? 'vorhanden' : 'kein Schlüssel erzeugt' %></strong></p>
+  <% if (erstelltAm) { %><p class="text-schwach">Erzeugt am: <%= new Date(erstelltAm).toLocaleString('de-DE') %></p><% } %>
+  <% if (zuletztGenutztAm) { %><p class="text-schwach">Zuletzt genutzt am: <%= new Date(zuletztGenutztAm).toLocaleString('de-DE') %></p><% } %>
+
+  <form method="post" action="/admin/api/aktivieren" class="inline">
+    <input type="hidden" name="aktiv" value="<%= enabled ? '0' : '1' %>">
+    <button type="submit"><%= enabled ? 'API deaktivieren' : 'API aktivieren' %></button>
+  </form>
+</div>
+
+<div class="karte">
+  <h2>Schlüssel erzeugen / ersetzen</h2>
+  <p class="text-schwach">Erzeugt einen neuen, zufälligen Schlüssel und macht einen eventuell vorhandenen alten Schlüssel sofort ungültig.</p>
+  <form method="post" action="/admin/api/erzeugen">
+    <button type="submit"><%= hatSchluessel ? 'Schlüssel ersetzen' : 'Schlüssel erzeugen' %></button>
+  </form>
+</div>
+
+<% if (hatSchluessel) { %>
+<div class="karte">
+  <h2>Schlüssel widerrufen</h2>
+  <p class="text-schwach">Macht den Schlüssel sofort ungültig und deaktiviert die API.</p>
+  <form method="post" action="/admin/api/widerrufen">
+    <button type="submit" class="knopf-gefahr">Schlüssel widerrufen</button>
+  </form>
+</div>
+<% } %>
+<%- include('../partials/footer') %>

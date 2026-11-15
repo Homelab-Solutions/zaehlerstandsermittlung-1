@@ -1,0 +1,47 @@
+<%- include('../partials/header', { titel }) %>
+<h1>Messwert bearbeiten</h1>
+<% if (fehler) { %><p class="meldung meldung-fehler"><%= fehler %></p><% } %>
+
+<div class="karte">
+  <form method="post" action="/admin/messwerte/<%= reading.id %>/bearbeiten" class="formular">
+    <label>Zähler/Nummer
+      <select name="meter_id" required>
+        <% const gruppenNamen = [...new Set(meters.map(m => m.group_name || 'Ohne Gruppe'))]; %>
+        <% gruppenNamen.forEach(gruppe => { %>
+          <optgroup label="<%= gruppe %>">
+          <% meters.filter(m => (m.group_name || 'Ohne Gruppe') === gruppe).forEach(m => { %>
+            <option value="<%= m.id %>" <%= m.id === reading.meter_id ? 'selected' : '' %>><%= m.number %> (<%= m.anzeige_bezeichnung || m.type_label_name %>)</option>
+          <% }) %>
+          </optgroup>
+        <% }) %>
+      </select>
+    </label>
+    <label>Datum
+      <input type="text" name="datum" value="<%= new Date(reading.reading_at).toISOString().slice(0,10) %>" placeholder="TT.MM.JJJJ oder JJJJ-MM-TT" required>
+    </label>
+    <label>Wert
+      <input type="text" name="wert" inputmode="decimal" value="<%= formatWert(reading.value, 'abgelesen') %>" required>
+    </label>
+    <label>Messart <span class="text-schwach">(nur bei Stromzählern: verbrauch/einspeisung; bei Wärmemengenzählern: kwh/m3; sonst leer lassen)</span>
+      <select name="messart">
+        <option value="" <%= !reading.strom_richtung && !reading.waerme_teil ? 'selected' : '' %>>- keine -</option>
+        <option value="verbrauch" <%= reading.strom_richtung === 'verbrauch' ? 'selected' : '' %>>Verbrauch (Strom)</option>
+        <option value="einspeisung" <%= reading.strom_richtung === 'einspeisung' ? 'selected' : '' %>>Einspeisung (Strom)</option>
+        <option value="kwh" <%= reading.waerme_teil === 'kwh' ? 'selected' : '' %>>kWh (Wärmemenge)</option>
+        <option value="m3" <%= reading.waerme_teil === 'm3' ? 'selected' : '' %>>m³ (Wärmemenge)</option>
+      </select>
+    </label>
+    <label>Status
+      <select name="status">
+        <option value="abgelesen" <%= reading.status === 'abgelesen' ? 'selected' : '' %>>abgelesen</option>
+        <option value="geschaetzt" <%= reading.status === 'geschaetzt' ? 'selected' : '' %>>geschätzt</option>
+      </select>
+    </label>
+    <label>Bemerkung
+      <textarea name="bemerkung" rows="2"><%= reading.bemerkung || '' %></textarea>
+    </label>
+    <button type="submit">Speichern</button>
+  </form>
+  <p class="text-schwach">Änderungen werden mit altem und neuem Wert im Audit-Protokoll vermerkt.</p>
+</div>
+<%- include('../partials/footer') %>

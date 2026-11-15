@@ -1,0 +1,56 @@
+<%- include('../partials/header', { titel }) %>
+<h1><%= titel %></h1>
+<% if (fehler) { %><p class="meldung meldung-fehler"><%= fehler %></p><% } %>
+
+<div class="karte">
+  <form method="post" action="<%= zaehlerart ? ('/admin/zaehlerarten/' + zaehlerart.id) : '/admin/zaehlerarten' %>" class="formular">
+    <label>Name
+      <input type="text" name="label" value="<%= zaehlerart ? zaehlerart.label : '' %>" required>
+    </label>
+    <label>Einheit
+      <select name="unit" id="unit" required <%= zaehlerart ? 'disabled' : '' %>>
+        <option value="m³" <%= !zaehlerart || zaehlerart.unit === 'm³' ? 'selected' : '' %>>m³</option>
+        <option value="kWh" <%= zaehlerart && zaehlerart.unit === 'kWh' ? 'selected' : '' %>>kWh</option>
+      </select>
+      <% if (zaehlerart) { %>
+        <input type="hidden" name="unit" value="<%= zaehlerart.unit %>">
+        <span class="text-schwach">Die Einheit kann nach dem Anlegen nicht mehr geändert werden (bestehende Messwerte hängen daran).</span>
+      <% } %>
+    </label>
+    <% if (!zaehlerart) { %>
+    <label class="inline">
+      <input type="checkbox" name="waerme_kombi" id="waerme_kombi" <%= zaehlerart && zaehlerart.waerme_kombi ? 'checked' : '' %>>
+      Wärmemengenzähler (gemeinsam kWh und m³ je Ablesung erfassen)
+    </label>
+    <p class="text-schwach">Nur bei der Neuanlage wählbar: Zähler dieser Art fragen bei der Erfassung zusätzlich zum kWh-Zählerstand den m³-Wert ab (beide Pflicht, Einheit wird automatisch auf kWh gesetzt). Nach dem Anlegen nicht mehr änderbar.</p>
+    <% } else if (zaehlerart.waerme_kombi) { %>
+      <p class="text-schwach">Diese Zählerart ist ein Wärmemengenzähler (kWh + m³ gemeinsam je Ablesung) - das ist nach dem Anlegen nicht mehr änderbar.</p>
+    <% } %>
+    <label class="inline">
+      <input type="checkbox" name="betreiber_versorger_standard" <%= zaehlerart && zaehlerart.betreiber_versorger_standard ? 'checked' : '' %>>
+      Vorgabe: neue Zähler dieser Art sind vom Versorger betrieben
+    </label>
+    <p class="text-schwach">Gilt nur als Voreinstellung beim Anlegen eines neuen Zählers dieser Art - lässt sich je Zähler jederzeit ändern.</p>
+    <label class="inline">
+      <input type="checkbox" name="eichdaten_anzeigen_standard" <%= !zaehlerart || zaehlerart.eichdaten_anzeigen_standard ? 'checked' : '' %>>
+      Vorgabe: Eichdatum/Eichfrist für Zähler dieser Art anzeigen
+    </label>
+    <p class="text-schwach">Steuert, ob Eichdatum/Eichfrist in der Zählerverwaltung und den Eichfrist-Hinweisen auf dem Dashboard erscheinen; je Zähler überschreibbar.</p>
+    <button type="submit">Speichern</button>
+  </form>
+</div>
+<% if (!zaehlerart) { %>
+<script>
+(function () {
+  var waermeKombiBox = document.getElementById('waerme_kombi');
+  var unitSelect = document.getElementById('unit');
+  if (waermeKombiBox && unitSelect) {
+    waermeKombiBox.addEventListener('change', function () {
+      if (waermeKombiBox.checked) { unitSelect.value = 'kWh'; unitSelect.disabled = true; }
+      else { unitSelect.disabled = false; }
+    });
+  }
+})();
+</script>
+<% } %>
+<%- include('../partials/footer') %>

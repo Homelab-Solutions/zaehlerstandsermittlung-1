@@ -1,0 +1,81 @@
+<%- include('partials/header', { titel }) %>
+<h1>Dashboard</h1>
+
+<% if (eichfristenListe.length > 0) { %>
+<div class="karte meldung-warnung-box">
+  <h2>Eichfristen</h2>
+  <ul>
+    <% eichfristenListe.forEach(e => { %>
+      <li class="<%= e.abgelaufen ? 'text-fehler' : 'text-warnung' %>">
+        <%= e.anzeigeName %> (Zähler <%= e.meter.number %>): Eichfrist <%= e.meter.eich_frist %>
+        <%= e.abgelaufen ? '- ABGELAUFEN' : '- fällig in den nächsten 90 Tagen' %>
+      </li>
+    <% }) %>
+  </ul>
+</div>
+<% } %>
+
+<div class="karte">
+  <div class="dashboard-kopfzeile">
+    <h2>Aktuelle Zählerstände</h2>
+    <form method="get" action="/" class="filter-formular">
+      <label class="inline">Zähler
+        <select name="meter_id" onchange="this.form.submit()">
+          <option value="">Alle Zähler</option>
+          <% alleAktivenZaehler.forEach(m => { %>
+            <option value="<%= m.id %>" <%= gefilterterMeterId === m.id ? 'selected' : '' %>><%= m.anzeigeName %> - Zählernummer <%= m.number %></option>
+          <% }) %>
+        </select>
+      </label>
+    </form>
+  </div>
+  <div class="tabelle-wrap">
+  <table class="tabelle">
+    <thead>
+      <tr><th>Gruppe – Bezeichnung</th><th>Zählernummer</th><th>Letzter Stand</th><th>Datum</th><th>Verbrauch seit vorheriger Ablesung</th><th>Schätzung für heute</th></tr>
+    </thead>
+    <tbody>
+      <% stand.forEach(s => { %>
+        <tr>
+          <td data-label="Gruppe – Bezeichnung"><%= s.anzeigeName %><%= s.richtung ? (s.richtung === 'verbrauch' ? ' (Verbrauch)' : ' (Einspeisung)') : '' %><%= s.teil ? (s.teil === 'kwh' ? ' (kWh)' : ' (m³)') : '' %></td>
+          <td data-label="Zählernummer"><%= s.meter.number %></td>
+          <td data-label="Letzter Stand">
+            <% if (s.aktuell) { %>
+              <%= formatWert(s.aktuell.value, s.aktuell.status) %> <%= s.aktuell.unit %>
+              <% if (s.aktuell.status === 'geschaetzt') { %><span class="chip chip-warnung">geschätzt</span><% } %>
+            <% } else { %>
+              <span class="text-schwach">keine Messung</span>
+            <% } %>
+          </td>
+          <td data-label="Datum"><%= s.aktuell ? new Date(s.aktuell.reading_at).toLocaleDateString('de-DE') : '-' %></td>
+          <td data-label="Verbrauch seit vorheriger Ablesung">
+            <% if (s.verbrauch && !s.verbrauch.anomalie && s.verbrauch.value !== null) { %>
+              <%= s.verbrauch.value.toFixed(3) %> <%= s.aktuell.unit %>
+            <% } else if (s.verbrauch && s.verbrauch.anomalie) { %>
+              <span class="text-fehler" title="<%= s.verbrauch.hinweis %>">nicht ermittelbar</span>
+            <% } else { %>
+              <span class="text-schwach">-</span>
+            <% } %>
+          </td>
+          <td data-label="Schätzung für heute" class="spalte-prognose">
+            <% if (s.prognoseAktuell && s.prognoseAktuell.moeglich && s.prognoseAktuell.tageSeit > 0) { %>
+              <div class="schaetzung-box">
+                <span class="chip chip-schaetzung">Schätzung – kein Ist-Wert</span>
+                <div><%= s.prognoseAktuell.wert.toFixed(2) %> <%= s.aktuell.unit %><% if (s.prognoseAktuell.grob) { %> <span class="chip chip-warnung">grob</span><% } %></div>
+                <span class="text-schwach"><%= s.prognoseAktuell.tageSeit %> Tag(e) seit letzter Ablesung hochgerechnet, nicht gespeichert</span>
+              </div>
+            <% } else { %>
+              <span class="text-schwach">-</span>
+            <% } %>
+          </td>
+        </tr>
+      <% }) %>
+      <% if (stand.length === 0) { %>
+        <tr><td colspan="6" class="text-schwach">Kein Zähler für diese Auswahl.</td></tr>
+      <% } %>
+    </tbody>
+  </table>
+  </div>
+</div>
+
+<%- include('partials/footer') %>

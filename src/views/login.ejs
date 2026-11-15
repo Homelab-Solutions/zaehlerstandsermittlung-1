@@ -1,0 +1,15 @@
+<%- include('partials/header', { titel }) %>
+<div class="karte karte-schmal">
+  <h1>Anmelden</h1>
+  <% if (fehler) { %><p class="meldung meldung-fehler"><%= fehler %></p><% } %>
+  <form method="post" action="/login" class="formular">
+    <label>E-Mail
+      <input type="email" name="email" required autofocus>
+    </label>
+    <label>Passwort
+      <input type="password" name="passwort" required>
+    </label>
+    <button type="submit">Anmelden</button>
+  </form>
+</div>
+<%- include('partials/footer') %>

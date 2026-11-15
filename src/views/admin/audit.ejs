@@ -1,0 +1,25 @@
+<%- include('../partials/header', { titel }) %>
+<h1>Audit-Protokoll</h1>
+<p class="text-schwach">Messwerterfassungen und Zähleränderungen, nur für Administratoren sichtbar. Zeigt die letzten 300 Einträge. Enthält nie Passwörter oder API-Schlüssel.</p>
+
+<div class="karte">
+  <div class="tabelle-wrap">
+    <table class="tabelle">
+      <thead><tr><th>Zeitpunkt</th><th>Benutzer</th><th>Aktion</th><th>Details</th></tr></thead>
+      <tbody>
+        <% eintraege.forEach(e => { %>
+          <tr>
+            <td data-label="Zeitpunkt"><%= new Date(e.created_at).toLocaleString('de-DE') %></td>
+            <td data-label="Benutzer"><%= e.user_email || 'System' %></td>
+            <td data-label="Aktion"><%= auditLabels[e.action] || e.action %></td>
+            <td data-label="Details"><code class="details-code"><%= e.details || '' %></code></td>
+          </tr>
+        <% }) %>
+        <% if (eintraege.length === 0) { %>
+          <tr><td colspan="4" class="text-schwach">Noch keine Einträge.</td></tr>
+        <% } %>
+      </tbody>
+    </table>
+  </div>
+</div>
+<%- include('../partials/footer') %>

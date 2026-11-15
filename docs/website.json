@@ -1,0 +1,9 @@
+{
+  "title_de": "Zählwerk – Zählerstände",
+  "title_en": "Zählwerk – Meter Readings",
+  "summary_de": "Web-App zum Erfassen und Auswerten von Zählerständen (Wasser, Heizung, Gas, Strom) mit Diagrammen, Statistik und Import/Export.",
+  "summary_en": "Web app to record and analyse meter readings (water, heating, gas, electricity) with charts, statistics and import/export.",
+  "description_de": "Zählwerk erfasst die Zählerstände eines Hauses mit Mietwohnung: Kaltwasser, Warmwasser, Heizung, Gas und Strom, jeweils für Haus und Wohnung. Das Dashboard zeigt aktuelle Stände, den Verbrauch seit der letzten Ablesung und eine Schätzung für heute.\n\nAdmins verwalten Zähler, Zählerarten und Gruppen, bearbeiten Messwerte und sehen Statistik sowie Diagramme mit Vorjahresvergleich und Prognose. Messwerte lassen sich als JSON, CSV oder Excel importieren und exportieren; optional hilft eine KI bei der Foto-Erkennung. Benutzer erhalten Rechte je Zählergruppe, Eichfristen werden per E-Mail gemeldet.\n\nDie App läuft mit SQLite (optional MariaDB) als Docker-Container, ohne offene Registrierung.",
+  "description_en": "Zählwerk records the meter readings of a house with a rented flat: cold water, hot water, heating, gas and electricity, each for house and flat. The dashboard shows current readings, consumption since the last reading and an estimate for today.\n\nAdmins manage meters, meter types and groups, edit readings and see statistics and charts with year-over-year comparison and forecast. Readings can be imported and exported as JSON, CSV or Excel; an optional AI helps with photo recognition. Users get rights per meter group, calibration deadlines are reported by email.\n\nThe app runs with SQLite (optionally MariaDB) as a Docker container, without open registration.",
+  "tags": ["Zähler", "Verbrauch", "Node.js", "SQLite", "Docker"]
+}

@@ -1,0 +1,29 @@
+<%- include('partials/header', { titel }) %>
+<h1><%= istAdmin ? 'Messwert bearbeiten' : 'Korrektur vorschlagen' %></h1>
+<% if (fehler) { %><p class="meldung meldung-fehler"><%= fehler %></p><% } %>
+
+<div class="karte">
+  <h2>Zähler <%= reading.meter_number %><%= reading.group_name ? ' - ' + reading.group_name : '' %><%= reading.anzeige_bezeichnung ? ' – ' + reading.anzeige_bezeichnung : '' %></h2>
+  <p class="text-schwach">
+    Aktueller Wert: <strong><%= formatWert(reading.value, reading.status) %> <%= reading.unit %></strong>
+    (<%= new Date(reading.reading_at).toLocaleDateString('de-DE') %>, <%= reading.type_label_name %><%= reading.strom_richtung ? (reading.strom_richtung === 'verbrauch' ? ' - Verbrauch' : ' - Einspeisung') : '' %><%= reading.waerme_teil ? (reading.waerme_teil === 'kwh' ? ' - kWh' : ' - m³') : '' %>, Status <%= reading.status %>)
+  </p>
+
+  <% if (!istAdmin) { %>
+    <p class="meldung meldung-warnung-box">Dies ist eine normale Benutzerrolle: der vorgeschlagene Wert ändert den Messwert nicht sofort, sondern wird als Korrektur zur Freigabe an einen Administrator weitergeleitet.</p>
+  <% } %>
+
+  <form method="post" action="/messwerte/<%= reading.id %>/bearbeiten" class="formular">
+    <label><%= istAdmin ? 'Neuer Zählerstand' : 'Vorgeschlagener Zählerstand' %> (<%= reading.unit %>)
+      <input type="text" name="wert" inputmode="decimal" required value="">
+    </label>
+    <label><%= istAdmin ? 'Neues Datum' : 'Vorgeschlagenes Datum' %> <span class="text-schwach">(optional, leer lassen = unverändert)</span>
+      <input type="date" name="datum">
+    </label>
+    <label>Bemerkung<%= istAdmin ? ' (optional)' : ' - Begründung erforderlich' %>
+      <textarea name="bemerkung" rows="2" <%= istAdmin ? '' : 'required' %>></textarea>
+    </label>
+    <button type="submit"><%= istAdmin ? 'Speichern' : 'Korrektur einreichen' %></button>
+  </form>
+</div>
+<%- include('partials/footer') %>

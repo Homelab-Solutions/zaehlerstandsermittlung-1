@@ -1,0 +1,13 @@
+<%- include('partials/header', { titel }) %>
+<h1>Export (Messwerte)</h1>
+<p class="text-schwach">Für Zähler-Stammdaten (Gruppen, Zählerarten, Zähler) ohne Messwerte: <a href="/admin/zaehler-stammdaten/export">Zähler-Stammdaten exportieren</a>.</p>
+<div class="karte">
+  <p>Vollständiger Datenexport in verschiedenen Formaten.</p>
+  <ul>
+    <li><a href="/export/json">JSON-Export</a> (alle Daten)</li>
+    <li><a href="/export/csv">CSV-Export</a> (Messwerte)</li>
+    <li><a href="/export/xlsx">Excel-Export (.xlsx)</a> (Messwerte, nutzt die Original-Vorlage sobald vorhanden)</li>
+  </ul>
+  <p class="text-schwach">Sobald die Original-Arbeitsmappe "Zählerstände.xlsx" über die AppFactory ins Projekt gelegt und unter <code>data/vorlagen/Zaehlerstaende-Original.xlsx</code> abgelegt wurde, nutzt der Excel-Export deren Layout als Vorlage.</p>
+</div>
+<%- include('partials/footer') %>

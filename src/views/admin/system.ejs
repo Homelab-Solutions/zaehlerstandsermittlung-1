@@ -1,0 +1,18 @@
+<%- include('../partials/header', { titel }) %>
+<h1>System</h1>
+<div class="karte">
+  <h2>Datenbank</h2>
+  <p>Treiber: <strong><%= dbDriver %></strong></p>
+  <% if (dbDriver === 'mariadb') { %>
+    <p>Host: <%= dbInfo.host %>:<%= dbInfo.port %> | Datenbank: <%= dbInfo.database %> | Benutzer: <%= dbInfo.user %></p>
+  <% } else { %>
+    <p>Datei: <%= dbInfo.datei %> (im Docker-Volume, keine externe Datenbank nötig)</p>
+  <% } %>
+  <p><%= anzahlMesswerte %> Messwert(e), <%= anzahlFotos %> gespeicherte(s) Foto(s).</p>
+  <p class="text-schwach">Der Datenbanktreiber wird über DB_DRIVER in der .env festgelegt und erfordert zum Wechseln ein Neuanlegen des Containers (siehe README). Ein admin-geführter, verifizierter Wechsel inkl. Datenmigration steht unter <a href="/admin/datenbank">Datenbankwechsel</a> zur Verfügung.</p>
+</div>
+<div class="karte">
+  <h2>Externe Lese-API</h2>
+  <p class="text-schwach">Für ein späteres externes Nebenkostenabrechnungsprogramm: siehe <a href="/admin/api">Externe Lese-API</a>.</p>
+</div>
+<%- include('../partials/footer') %>

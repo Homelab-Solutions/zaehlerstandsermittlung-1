@@ -1,0 +1,44 @@
+<%- include('../partials/header', { titel }) %>
+<h1>Zählerarten</h1>
+<p class="text-schwach">"Vom Versorger betrieben" und "Eichdaten anzeigen" sind Vorgaben für neue Zähler dieser Art und lassen sich bei jedem einzelnen Zähler überschreiben (siehe Zählerverwaltung).</p>
+<% if (erfolg) { %><p class="meldung meldung-erfolg"><%= erfolg %></p><% } %>
+<% if (fehler) { %><p class="meldung meldung-fehler"><%= fehler %></p><% } %>
+<p><a href="/admin/zaehlerarten/neu" class="knopf-link">+ Neue Zählerart</a></p>
+
+<div class="tabelle-wrap">
+<table class="tabelle">
+  <thead>
+    <tr><th>Name</th><th>Einheit</th><th>Vom Versorger betrieben (Vorgabe)</th><th>Eichdaten anzeigen (Vorgabe)</th><th>Zähler</th><th>Status</th><th>Aktionen</th></tr>
+  </thead>
+  <tbody>
+    <% zaehlerarten.forEach(t => { %>
+      <tr class="<%= t.active ? '' : 'zeile-inaktiv' %>">
+        <td data-label="Name"><%= t.label %><% if (t.waerme_kombi) { %> <span class="chip chip-schaetzung">Wärmemengenzähler</span><% } %></td>
+        <td data-label="Einheit"><%= t.unit %></td>
+        <td data-label="Vom Versorger betrieben (Vorgabe)"><%= t.betreiber_versorger_standard ? 'Ja' : 'Nein' %></td>
+        <td data-label="Eichdaten anzeigen (Vorgabe)"><%= t.eichdaten_anzeigen_standard ? 'Ja' : 'Nein' %></td>
+        <td data-label="Zähler"><%= t.anzahl_zaehler %></td>
+        <td data-label="Status"><%= t.active ? 'aktiv' : 'deaktiviert' %></td>
+        <td data-label="Aktionen" class="aktionen-zelle">
+          <a href="/admin/zaehlerarten/<%= t.id %>/bearbeiten">Bearbeiten</a>
+          |
+          <form method="post" action="/admin/zaehlerarten/<%= t.id %>/aktivieren" class="inline">
+            <input type="hidden" name="aktiv" value="<%= t.active ? '0' : '1' %>">
+            <button type="submit" class="link-knopf"><%= t.active ? 'Deaktivieren' : 'Aktivieren' %></button>
+          </form>
+          <% if (t.anzahl_zaehler === 0) { %>
+            |
+            <form method="post" action="/admin/zaehlerarten/<%= t.id %>/loeschen" class="inline" onsubmit="return confirm('Zählerart \'<%= t.label %>\' wirklich endgültig löschen?');">
+              <button type="submit" class="link-knopf link-knopf-gefahr">Löschen</button>
+            </form>
+          <% } %>
+        </td>
+      </tr>
+    <% }) %>
+    <% if (zaehlerarten.length === 0) { %>
+      <tr><td colspan="7" class="text-schwach">Noch keine Zählerarten angelegt.</td></tr>
+    <% } %>
+  </tbody>
+</table>
+</div>
+<%- include('../partials/footer') %>

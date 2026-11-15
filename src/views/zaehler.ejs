@@ -1,0 +1,62 @@
+<%- include('partials/header', { titel, breit: true }) %>
+<h1>Zählerverwaltung</h1>
+<% if (erfolg) { %><p class="meldung meldung-erfolg"><%= erfolg %></p><% } %>
+<% if (fehler) { %><p class="meldung meldung-fehler"><%= fehler %></p><% } %>
+<p><a href="/zaehler/neu" class="knopf-link">+ Neuer Zähler</a></p>
+<p class="text-schwach spalte-sekundaer-hinweis">Auf schmalen Bildschirmen werden Zählerart, Hersteller, Betreiber, Einheit, Eichfrist sowie Einbau-/Ausbaudatum ausgeblendet - vollständig einsehbar über "Bearbeiten".</p>
+
+<%
+function zaehlerTabelle(liste) { %>
+<div class="tabelle-wrap">
+<table class="tabelle">
+  <thead>
+    <tr><th>Gruppe – Bezeichnung</th><th class="spalte-sekundaer">Zählerart</th><th>Nummer</th><th class="spalte-sekundaer">Hersteller</th><th class="spalte-sekundaer">Betrieben/gewartet durch</th><th class="spalte-sekundaer">Einheit</th><th class="spalte-sekundaer">Eichfrist</th><th class="spalte-sekundaer">Einbau</th><th class="spalte-sekundaer">Ausbau</th><th>Status</th><th>Aktionen</th></tr>
+  </thead>
+  <tbody>
+    <% liste.forEach(z => { %>
+      <tr class="<%= z.active ? '' : 'zeile-inaktiv' %>">
+        <td data-label="Gruppe – Bezeichnung"><%= z.group_name ? (z.group_name + ' – ' + (z.anzeige_bezeichnung || z.type_label_name)) : (z.anzeige_bezeichnung || '-') %></td>
+        <td data-label="Zählerart" class="spalte-sekundaer"><%= z.type_label_name %></td>
+        <td data-label="Nummer"><%= z.number %><% if (z.ersetzt_meter_id) { %><br><span class="text-schwach">ersetzt Zähler-ID <%= z.ersetzt_meter_id %></span><% } %></td>
+        <td data-label="Hersteller" class="spalte-sekundaer"><%= z.manufacturer || '' %></td>
+        <td data-label="Betrieben/gewartet durch" class="spalte-sekundaer">
+          <%= z.betreiber_typ === 'energieversorger' ? 'Energieversorger/Betreiber' : 'Eigentümer' %>
+          <% if (z.messbetreiber) { %><br><span class="text-schwach"><%= z.messbetreiber %></span><% } %>
+          <% if (!z.eichfrist_benachrichtigen) { %><span class="chip chip-warnung" title="Eichfrist-Erinnerung ist für diesen Zähler deaktiviert">keine Erinnerung</span><% } %>
+        </td>
+        <td data-label="Einheit" class="spalte-sekundaer"><%= z.unit %></td>
+        <td data-label="Eichfrist" class="spalte-sekundaer"><%= z.eichdaten_anzeigen_effektiv ? (z.eich_frist || '') : '' %></td>
+        <td data-label="Einbau" class="spalte-sekundaer"><%= z.einbau_datum || '' %></td>
+        <td data-label="Ausbau" class="spalte-sekundaer"><%= z.ausbau_datum || '' %></td>
+        <td data-label="Status"><%= z.active ? 'aktiv' : 'ausgebaut' %></td>
+        <td data-label="Aktionen" class="aktionen-zelle">
+          <a href="/zaehler/<%= z.id %>/bearbeiten">Bearbeiten</a>
+          <% if (z.active) { %> | <a href="/zaehler/<%= z.id %>/bearbeiten#wechsel">Zählerwechsel</a><% } %>
+          |
+          <form method="post" action="/zaehler/<%= z.id %>/loeschen" class="inline" onsubmit="return confirm('Zähler <%= z.number %> wirklich endgültig löschen?');">
+            <button type="submit" class="link-knopf link-knopf-gefahr" <%- z.reading_count > 0 ? 'disabled title="Hat Messwerte - kann nicht gelöscht werden, stattdessen deaktivieren"' : '' %>>Löschen</button>
+          </form>
+        </td>
+      </tr>
+    <% }) %>
+  </tbody>
+</table>
+</div>
+<% } %>
+
+<% gruppen.forEach(g => { %>
+  <h2 class="zaehler-gruppe-titel"><%= g.name %></h2>
+  <% zaehlerTabelle(g.zaehler); %>
+<% }) %>
+
+<% if (inaktive.length > 0) { %>
+  <h2 class="zaehler-gruppe-titel">Nicht mehr verbaut / inaktive Zähler</h2>
+  <p class="text-schwach">Zähler, die z. B. nach einem Zählerwechsel ausgebaut wurden - ihre Historie bleibt unverändert erhalten, der Status wird hier nicht automatisch umgedeutet.</p>
+  <% zaehlerTabelle(inaktive); %>
+<% } %>
+
+<% if (gruppen.length === 0 && inaktive.length === 0) { %>
+  <p class="text-schwach">Noch keine Zähler angelegt.</p>
+<% } %>
+
+<%- include('partials/footer') %>

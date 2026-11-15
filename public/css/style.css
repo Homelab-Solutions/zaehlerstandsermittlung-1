@@ -1,0 +1,339 @@
+:root {
+  --farbe-text: #1b2430;
+  --farbe-text-schwach: #5b6b7a;
+  --farbe-hintergrund: #f2f7f9;
+  --farbe-karte: #ffffff;
+  --farbe-rand: #dbe4e9;
+  --farbe-akzent: #1d6fa5;
+  --farbe-akzent-dunkel: #15516f;
+  --farbe-akzent-hell: #e3f1f8;
+  --farbe-fehler: #b3261e;
+  --farbe-fehler-hell: #fdecea;
+  --farbe-warnung: #92600a;
+  --farbe-warnung-hell: #fff3da;
+  --farbe-erfolg: #1e7a44;
+  --farbe-erfolg-hell: #e7f6ed;
+  --schatten-karte: 0 1px 3px rgba(20, 40, 55, 0.08), 0 1px 2px rgba(20, 40, 55, 0.06);
+  --radius: 10px;
+}
+
+* { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  background: var(--farbe-hintergrund);
+  background-image: radial-gradient(circle at top right, var(--farbe-akzent-hell) 0%, transparent 45%);
+  background-attachment: fixed;
+  color: var(--farbe-text);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+a { color: var(--farbe-akzent); }
+a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
+  outline: 3px solid #8fc3e6;
+  outline-offset: 2px;
+}
+
+/* ---------- Kopfzeile / Navigation ---------- */
+.kopf {
+  background: linear-gradient(180deg, var(--farbe-akzent-dunkel), var(--farbe-akzent));
+  color: #fff;
+  box-shadow: var(--schatten-karte);
+  position: sticky;
+  top: 0;
+  z-index: 20;
+}
+.kopf-zeile {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.7rem 1rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+.kopf-titel a { font-weight: 700; font-size: 1.1rem; text-decoration: none; color: #fff; }
+
+.nav-umschalter {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+  background: transparent;
+  border: none;
+  padding: 0.5rem;
+  min-width: 44px;
+  min-height: 44px;
+  cursor: pointer;
+}
+.nav-umschalter-strich {
+  display: block;
+  width: 24px;
+  height: 2px;
+  background: #fff;
+  border-radius: 2px;
+}
+
+.hauptnav {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.3rem 1.1rem;
+  padding: 0 1rem 0.7rem;
+}
+.hauptnav a {
+  text-decoration: none;
+  color: rgba(255, 255, 255, 0.88);
+  padding: 0.35rem 0.1rem;
+  border-bottom: 2px solid transparent;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+}
+.hauptnav a:hover { color: #fff; }
+.hauptnav a.aktiv { color: #fff; border-bottom-color: #fff; font-weight: 600; }
+.kopf-benutzer {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  font-size: 0.88rem;
+  color: rgba(255, 255, 255, 0.92);
+}
+.kopf-benutzer .link-knopf { color: #fff; }
+
+@media (max-width: 860px) {
+  .nav-umschalter { display: flex; }
+  .hauptnav {
+    display: none;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    padding-bottom: 0.6rem;
+  }
+  .hauptnav.offen { display: flex; }
+  .hauptnav a { border-bottom: 1px solid rgba(255, 255, 255, 0.15); width: 100%; }
+  .hauptnav a.aktiv { border-bottom-color: #fff; }
+  .kopf-benutzer { margin-left: 0; flex-wrap: wrap; padding-top: 0.5rem; }
+}
+
+/* ---------- Layout ---------- */
+.inhalt { max-width: 1200px; margin: 0 auto; padding: 1.1rem; }
+/* Breitere Variante fuer einzelne, spaltenreiche Verwaltungslisten (z. B.
+   Zaehlerverwaltung) - bewusst opt-in je Seite statt global, damit schmalere
+   Seiten (Formulare, Login) unveraendert bleiben. */
+.inhalt-breit { max-width: 1600px; }
+
+h1 { margin-top: 0; font-size: clamp(1.4rem, 1.1rem + 1vw, 1.9rem); }
+h2 { font-size: clamp(1.1rem, 1rem + 0.5vw, 1.3rem); }
+
+.karte {
+  background: var(--farbe-karte);
+  border: 1px solid var(--farbe-rand);
+  border-radius: var(--radius);
+  box-shadow: var(--schatten-karte);
+  padding: 1.1rem 1.2rem;
+  margin-bottom: 1.2rem;
+}
+.karte-schmal { max-width: 420px; margin: 3rem auto; }
+
+.dashboard-kopfzeile { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.8rem; margin-bottom: 0.8rem; }
+.filter-formular { display: flex; flex-wrap: wrap; align-items: center; gap: 1rem; }
+.filter-formular label { display: flex; align-items: center; gap: 0.4rem; font-size: 0.92rem; }
+
+/* ---------- Formulare ---------- */
+.formular { display: flex; flex-direction: column; gap: 0.9rem; max-width: 520px; }
+.formular label { display: flex; flex-direction: column; gap: 0.3rem; font-size: 0.92rem; font-weight: 500; }
+.formular label.inline { flex-direction: row; align-items: center; gap: 0.5rem; font-weight: 400; }
+.formular input, .formular select, .formular textarea,
+input[type="text"], input[type="date"], input[type="time"], input[type="email"],
+input[type="password"], input[type="number"], select, textarea {
+  padding: 0.6rem 0.65rem;
+  border: 1px solid var(--farbe-rand);
+  border-radius: 7px;
+  font-size: 1rem; /* min. 16px effektiv verhindert Zoom auf iOS */
+  background: #fff;
+  color: var(--farbe-text);
+  width: 100%;
+  max-width: 100%;
+}
+.formular input[type="checkbox"] { width: auto; min-width: 20px; min-height: 20px; }
+
+button, .knopf {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  align-self: flex-start;
+  background: var(--farbe-akzent);
+  color: #fff;
+  border: none;
+  border-radius: 7px;
+  padding: 0.65rem 1.1rem;
+  cursor: pointer;
+  font-size: 0.96rem;
+  min-height: 44px;
+  text-decoration: none;
+  transition: opacity 0.15s ease;
+}
+button:hover, .knopf:hover { opacity: 0.9; }
+button:disabled { opacity: 0.55; cursor: not-allowed; }
+.knopf-sekundaer { background: var(--farbe-akzent-hell); color: var(--farbe-akzent-dunkel); }
+.knopf-gefahr { background: var(--farbe-fehler); }
+.knopf-link { background: var(--farbe-akzent); color: #fff; }
+.link-knopf { background: none; color: var(--farbe-akzent); padding: 0; min-height: auto; border: none; text-decoration: underline; cursor: pointer; }
+.link-knopf-gefahr { color: var(--farbe-fehler); }
+.link-knopf:disabled { color: var(--farbe-text-schwach); text-decoration: none; }
+.inline { display: inline; }
+
+@media (max-width: 600px) {
+  .formular { max-width: 100%; }
+  .formular button, .karte > form > button { align-self: stretch; }
+}
+
+/* ---------- Tabellen ---------- */
+.tabelle-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.tabelle { width: 100%; min-width: 560px; border-collapse: collapse; font-size: 0.92rem; }
+.tabelle th, .tabelle td { border-bottom: 1px solid var(--farbe-rand); padding: 0.55rem 0.6rem; text-align: left; vertical-align: top; }
+.tabelle th { background: var(--farbe-akzent-hell); color: var(--farbe-akzent-dunkel); white-space: nowrap; }
+.tabelle tbody tr:hover { background: #f7fbfd; }
+.zeile-inaktiv { opacity: 0.55; }
+.zeile-fehler { background: var(--farbe-fehler-hell); }
+.zeile-warnung { background: var(--farbe-warnung-hell); }
+.aktionen-zelle { white-space: nowrap; }
+.details-code { white-space: pre-wrap; word-break: break-word; font-size: 0.82rem; }
+
+@media (max-width: 480px) {
+  .tabelle { font-size: 0.86rem; }
+  .tabelle th, .tabelle td { padding: 0.45rem 0.4rem; }
+}
+
+/* Auf schmalen Bildschirmen duerfen Tabellen auf die tatsaechlich benoetigte
+   Breite schrumpfen (statt eine feste Mindestbreite zu erzwingen), und als
+   sekundaer markierte Spalten (.spalte-sekundaer an th/td) werden ausgeblendet
+   statt die ganze Seite horizontal scrollen zu lassen. Fuer die ausgeblendeten
+   Spalten bleibt eine vollstaendige Ansicht ueber die jeweilige Detail-/
+   Bearbeiten-Seite erreichbar; Aktionen werden nie als sekundaer markiert. */
+@media (max-width: 700px) {
+  .tabelle { min-width: 0; }
+  .tabelle .spalte-sekundaer { display: none; }
+}
+@media (min-width: 701px) {
+  .spalte-sekundaer-hinweis { display: none; }
+}
+
+/* ---------- Meldungen / Hinweise ---------- */
+.meldung { padding: 0.7rem 0.95rem; border-radius: 8px; margin-bottom: 1rem; }
+.meldung-fehler { background: var(--farbe-fehler-hell); color: var(--farbe-fehler); }
+.meldung-erfolg { background: var(--farbe-erfolg-hell); color: var(--farbe-erfolg); }
+.meldung-warnung-box { background: var(--farbe-warnung-hell); border-color: #f0cf8a; color: var(--farbe-warnung); }
+
+.text-schwach { color: var(--farbe-text-schwach); font-size: 0.88rem; }
+.text-fehler { color: var(--farbe-fehler); }
+.text-warnung { color: var(--farbe-warnung); }
+
+.chip { display: inline-block; padding: 0.1rem 0.5rem; border-radius: 999px; font-size: 0.76rem; margin-left: 0.3rem; font-weight: 600; }
+.chip-warnung { background: #fff0cc; color: var(--farbe-warnung); }
+.chip-schaetzung { background: #eef2f5; color: var(--farbe-text-schwach); margin-left: 0; }
+
+.schaetzung-box { font-style: italic; color: var(--farbe-text-schwach); border-left: 2px solid var(--farbe-rand); padding-left: 0.6rem; }
+.schaetzung-box > div { font-style: normal; color: var(--farbe-text); margin: 0.2rem 0; }
+
+.foto-vorschau { max-width: 280px; display: block; margin-top: 0.7rem; border-radius: 8px; border: 1px solid var(--farbe-rand); }
+
+/* ---------- KI-Verfuegbarkeitsindikator ---------- */
+.ki-status-punkt { display: inline-block; width: 0.6rem; height: 0.6rem; border-radius: 50%; vertical-align: middle; }
+.ki-status-punkt-unbekannt { background: var(--farbe-rand); }
+.ki-status-punkt-nicht-verfuegbar { background: var(--farbe-fehler); }
+.ki-status-punkt-verfuegbar { background: var(--farbe-erfolg); animation: ki-status-pulsieren 1.6s ease-in-out infinite; }
+@keyframes ki-status-pulsieren {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(30, 122, 68, 0.55); }
+  50% { box-shadow: 0 0 0 0.3rem rgba(30, 122, 68, 0); }
+}
+
+/* ---------- Admin-Menue ---------- */
+.admin-menue { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 0.8rem; }
+.admin-kachel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--farbe-karte);
+  border: 1px solid var(--farbe-rand);
+  border-radius: var(--radius);
+  box-shadow: var(--schatten-karte);
+  padding: 1.1rem 0.8rem;
+  text-decoration: none;
+  color: var(--farbe-text);
+  text-align: center;
+  font-weight: 600;
+  transition: opacity 0.15s ease;
+}
+.admin-kachel:hover { opacity: 0.85; }
+.admin-kachel-icon { font-size: 1.8rem; line-height: 1; }
+.admin-kachel-gefahr { color: var(--farbe-fehler); }
+
+fieldset { border: 1px solid var(--farbe-rand); border-radius: 8px; padding: 0.8rem; }
+
+/* ---------- Foto-Erfassung / Ladeanzeige ---------- */
+.foto-aktionen { display: flex; flex-wrap: wrap; gap: 0.6rem; align-items: center; margin: 0.6rem 0; }
+.foto-aktion-knopf { position: relative; }
+.verborgen-eingabe { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.verborgen-text { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.verborgen { display: none !important; }
+
+.lade-anzeige { display: flex; align-items: center; gap: 0.6rem; margin: 0.5rem 0; color: var(--farbe-akzent-dunkel); font-weight: 600; }
+.spinner {
+  width: 20px;
+  height: 20px;
+  border: 3px solid var(--farbe-akzent-hell);
+  border-top-color: var(--farbe-akzent);
+  border-radius: 50%;
+  animation: drehen 0.7s linear infinite;
+  flex-shrink: 0;
+}
+@keyframes drehen { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) {
+  .spinner { animation-duration: 1.6s; }
+}
+
+/* ---------- Fusszeile / Cookie-Hinweis ---------- */
+.fusszeile { max-width: 1200px; margin: 1rem auto 0; padding: 0 1.1rem 1.3rem; font-size: 0.85rem; }
+.fusszeile a { color: var(--farbe-text-schwach); }
+
+.cookie-hinweis {
+  position: fixed;
+  left: 1rem;
+  right: 1rem;
+  bottom: 1rem;
+  max-width: 560px;
+  margin: 0 auto;
+  background: var(--farbe-karte);
+  border: 1px solid var(--farbe-rand);
+  border-radius: var(--radius);
+  box-shadow: var(--schatten-karte);
+  padding: 0.9rem 1rem;
+  z-index: 30;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.7rem;
+}
+.cookie-hinweis p { margin: 0; font-size: 0.85rem; flex: 1 1 260px; }
+.cookie-hinweis button { align-self: center; }
+
+/* ---------- Admin: gruppierte Uebersicht ---------- */
+.admin-gruppe { margin-bottom: 1.6rem; }
+.admin-gruppe h2 { margin-bottom: 0.6rem; }
+
+/* ---------- Zaehlerverwaltung: Gruppenabschnitte ---------- */
+.zaehler-gruppe-titel { margin: 1.4rem 0 0.5rem; }
+.zaehler-gruppe-titel:first-child { margin-top: 0; }
+
+/* ---------- Rechtliches: editierbare Textvorlagen ---------- */
+.rechtstext { white-space: pre-wrap; word-break: break-word; }

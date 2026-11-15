@@ -1,0 +1,87 @@
+<%- include('../partials/header', { titel }) %>
+<h1>Vollbackup / Wiederherstellung</h1>
+<p class="text-schwach">Vollständiges technisches Backup für eine Wiederherstellung auf einem neu aufgesetzten Server: alle Datenbanktabellen (inkl. Benutzerkonten, Audit-Protokoll und Einstellungen), hochgeladene Fotos sowie die Original-Excel-Vorlage. Das ist bewusst mehr als der fachliche <a href="/export">Export</a>, der absichtlich keine Passwörter/Geheimnisse enthält. Die Verbindungsdaten zur Datenbank (<code>.env</code>) sind nie enthalten und müssen auf dem Zielserver gemäß AppFactory-Konventionen manuell eingetragen werden.</p>
+<p class="meldung meldung-warnung-box"><strong>Vertraulich:</strong> Die Backup-Datei enthält Passwort-Hashes sowie den Schlüssel zur Entschlüsselung von SMTP-Passwort und KI-API-Key - sicher aufbewahren, nicht öffentlich ablegen.</p>
+
+<% if (erfolg) { %><p class="meldung meldung-erfolg"><%= erfolg %></p><% } %>
+<% if (fehler) { %><p class="meldung meldung-fehler"><%= fehler %></p><% } %>
+
+<div class="karte">
+  <h2>Backup erzeugen</h2>
+  <form method="post" action="/admin/backup/erzeugen">
+    <button type="submit">Vollbackup jetzt erzeugen</button>
+  </form>
+  <% if (backupEintrag) { %>
+    <p>
+      <a href="/admin/backup/herunterladen/<%= backupToken %>">Backup herunterladen</a>
+      (<%= backupEintrag.dateiname %><% if (backupEintrag.heruntergeladen) { %> - heruntergeladen<% } %>)
+    </p>
+    <div class="tabelle-wrap">
+      <table class="tabelle">
+        <thead><tr><th>Tabelle</th><th>Zeilen</th></tr></thead>
+        <tbody>
+          <% Object.entries(backupEintrag.tabellen).forEach(([tabelle, anzahl]) => { %>
+            <tr><td data-label="Tabelle"><%= tabelle %></td><td data-label="Zeilen"><%= anzahl %></td></tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  <% } %>
+</div>
+
+<div class="karte">
+  <h2>Wiederherstellen</h2>
+  <p class="text-schwach">Ersetzt <strong>sämtliche</strong> aktuellen Daten durch den Inhalt der hochgeladenen Backup-Datei. Ablauf: 1) Datei hochladen (Vorschau + automatische Sicherheitskopie des aktuellen Standes). 2) Sicherheitskopie herunterladen. 3) Ausdrücklich bestätigen.</p>
+
+  <% if (!restoreEintrag) { %>
+    <form method="post" action="/admin/backup/restore/vorschau" enctype="multipart/form-data" class="formular">
+      <label>Vollbackup-Datei (.zip)
+        <input type="file" name="datei" accept=".zip" required>
+      </label>
+      <button type="submit">Datei prüfen</button>
+    </form>
+  <% } else { %>
+    <div class="karte">
+      <h3>Vorschau</h3>
+      <p>Erzeugt am <%= new Date(restoreEintrag.manifest.erzeugt_am).toLocaleString('de-DE') %> (damaliger DB-Treiber: <%= restoreEintrag.manifest.db_treiber %>), <%= restoreEintrag.anzahlUploadDateien %> Foto(s)<%= restoreEintrag.hatVorlagen ? ', Excel-Vorlage vorhanden' : '' %><%= restoreEintrag.hatSecrets ? ', Verschlüsselungsschlüssel enthalten' : ', KEIN Verschlüsselungsschlüssel enthalten - SMTP-/KI-Einstellungen könnten danach nicht mehr entschlüsselbar sein' %>.</p>
+      <div class="tabelle-wrap">
+        <table class="tabelle">
+          <thead><tr><th>Tabelle</th><th>Zeilen im Backup</th></tr></thead>
+          <tbody>
+            <% Object.entries(restoreEintrag.tabellen).forEach(([tabelle, anzahl]) => { %>
+              <tr><td data-label="Tabelle"><%= tabelle %></td><td data-label="Zeilen im Backup"><%= anzahl %></td></tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="karte">
+      <h3>Schritt 2: Sicherheitskopie des aktuellen Standes</h3>
+      <p class="text-schwach">Automatisch vor der Vorschau erzeugt - ermöglicht ein Zurückspielen des jetzigen Standes, falls die Wiederherstellung nicht gewünscht war.</p>
+      <p>
+        <a href="/admin/backup/restore/<%= restoreToken %>/sicherheitskopie">Sicherheitskopie herunterladen</a>
+        (<%= restoreEintrag.sicherheitsBackup.dateiname %><% if (restoreEintrag.sicherheitsBackup.heruntergeladen) { %> - heruntergeladen<% } %>)
+      </p>
+    </div>
+
+    <div class="karte meldung-warnung-box">
+      <h3>Schritt 3: Bestätigen</h3>
+      <p><strong>Achtung:</strong> Danach werden alle aktuellen Zähler, Messwerte, Benutzerkonten, Einstellungen, Fotos und das Audit-Protokoll unwiderruflich durch den Inhalt der Backup-Datei ersetzt.</p>
+      <% if (!restoreEintrag.sicherheitsBackup.heruntergeladen) { %>
+        <p class="text-schwach">Bitte zuerst die Sicherheitskopie oben herunterladen.</p>
+      <% } else { %>
+        <form method="post" action="/admin/backup/restore/<%= restoreToken %>/bestaetigen" class="formular">
+          <label>Bitte exakt "<%= bestaetigungstext %>" eingeben:
+            <input type="text" name="bestaetigungstext" required>
+          </label>
+          <button type="submit" class="knopf-gefahr">Jetzt wiederherstellen</button>
+        </form>
+      <% } %>
+      <form method="post" action="/admin/backup/restore/<%= restoreToken %>/abbrechen" class="formular">
+        <button type="submit" class="knopf-sekundaer">Abbrechen</button>
+      </form>
+    </div>
+  <% } %>
+</div>
+<%- include('../partials/footer') %>

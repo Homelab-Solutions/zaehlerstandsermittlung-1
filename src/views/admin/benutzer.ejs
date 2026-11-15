@@ -1,0 +1,64 @@
+<%- include('../partials/header', { titel }) %>
+<h1>Benutzerverwaltung</h1>
+<% if (erfolg) { %><p class="meldung meldung-erfolg"><%= erfolg %></p><% } %>
+<% if (fehler) { %><p class="meldung meldung-fehler"><%= fehler %></p><% } %>
+
+<div class="karte">
+  <h2>Neues Konto</h2>
+  <form method="post" action="/admin/benutzer" class="formular">
+    <label>E-Mail<input type="email" name="email" required></label>
+    <label>Passwort (mind. 8 Zeichen)<input type="password" name="passwort" required minlength="8"></label>
+    <label>Rolle
+      <select name="role"><option value="user">Benutzer</option><option value="admin">Administrator</option></select>
+    </label>
+    <button type="submit">Anlegen</button>
+  </form>
+  <p class="text-schwach">Gruppenrechte für die Messwerterfassung werden nach dem Anlegen unten je Konto vergeben. Administratoren dürfen unabhängig davon immer alles.</p>
+</div>
+
+<div class="karte">
+  <h2>Bestehende Konten</h2>
+  <div class="tabelle-wrap">
+  <table class="tabelle">
+    <thead><tr><th>E-Mail</th><th>Rolle</th><th>Status</th><th>Gruppenrechte (Messwerterfassung)</th><th>Aktionen</th></tr></thead>
+    <tbody>
+      <% benutzer.forEach(b => { %>
+        <tr>
+          <td data-label="E-Mail"><%= b.email %></td>
+          <td data-label="Rolle"><%= b.role %></td>
+          <td data-label="Status"><%= b.active ? 'aktiv' : 'deaktiviert' %></td>
+          <td data-label="Gruppenrechte (Messwerterfassung)">
+            <% if (b.role === 'admin') { %>
+              <span class="text-schwach">Administrator - immer alle Gruppen</span>
+            <% } else if (gruppen.length === 0) { %>
+              <span class="text-schwach">Keine aktiven Gruppen vorhanden</span>
+            <% } else { %>
+              <form method="post" action="/admin/benutzer/<%= b.id %>/gruppen" class="formular formular-kompakt">
+                <% gruppen.forEach(g => { %>
+                  <label class="inline">
+                    <input type="checkbox" name="gruppen" value="<%= g.id %>" <%= b.gruppenIds.has(g.id) ? 'checked' : '' %>>
+                    <%= g.name %>
+                  </label>
+                <% }) %>
+                <button type="submit" class="link-knopf">Speichern</button>
+              </form>
+            <% } %>
+          </td>
+          <td data-label="Aktionen" class="aktionen-zelle">
+            <form method="post" action="/admin/benutzer/<%= b.id %>/aktiv" class="inline">
+              <input type="hidden" name="aktiv" value="<%= b.active ? '0' : '1' %>">
+              <button type="submit" class="link-knopf"><%= b.active ? 'Deaktivieren' : 'Aktivieren' %></button>
+            </form>
+            |
+            <form method="post" action="/admin/benutzer/<%= b.id %>/passwort" class="inline">
+              <input type="password" name="neues_passwort" placeholder="neues Passwort" minlength="8" required>
+              <button type="submit" class="link-knopf">Passwort setzen</button>
+            </form>
+          </td>
+        </tr>
+      <% }) %>
+    </tbody>
+  </table>
+  </div>
+</div>
+<%- include('../partials/footer') %>

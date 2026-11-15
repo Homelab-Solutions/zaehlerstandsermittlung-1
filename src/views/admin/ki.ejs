@@ -1,0 +1,33 @@
+<%- include('../partials/header', { titel }) %>
+<h1>KI-Einstellungen</h1>
+<% if (erfolg) { %><p class="meldung meldung-erfolg"><%= erfolg %></p><% } %>
+<% if (fehler) { %><p class="meldung meldung-fehler"><%= fehler %></p><% } %>
+
+<div class="karte">
+  <p class="text-schwach">Die Fotoerkennung ist optional. Ist kein Anbieter konfiguriert, nicht erreichbar oder schlägt die Erkennung fehl, bleibt die manuelle Erfassung uneingeschränkt möglich. Ergebnisse müssen vor dem Speichern immer vom Nutzer geprüft werden.</p>
+  <form method="post" action="/admin/ki" class="formular">
+    <label class="inline"><input type="checkbox" name="ai_enabled" <%= view.ai_enabled === 'true' ? 'checked' : '' %>> Fotoerkennung aktivieren</label>
+    <label>Anbieter
+      <select name="ai_provider">
+        <option value="openai_compatible" <%= view.ai_provider === 'openai_compatible' ? 'selected' : '' %>>OpenAI-kompatibler Endpunkt</option>
+        <option value="anthropic" <%= view.ai_provider === 'anthropic' ? 'selected' : '' %>>Anthropic (Claude) API</option>
+        <option value="ollama" <%= view.ai_provider === 'ollama' ? 'selected' : '' %>>Ollama</option>
+      </select>
+    </label>
+    <label>Endpunkt (Base-URL) <span class="text-schwach">(bei Anthropic optional, Standard https://api.anthropic.com)</span>
+      <input type="text" name="ai_base_url" value="<%= view.ai_base_url || '' %>" placeholder="z. B. https://api.openai.com/v1, http://localhost:11434 oder https://api.anthropic.com">
+    </label>
+    <label>Modell
+      <input type="text" name="ai_model" value="<%= view.ai_model || '' %>" placeholder="z. B. gpt-4o-mini, llama3.2-vision oder claude-sonnet-5-5">
+    </label>
+    <label>API-Key <%= view.ai_api_key_enc_gesetzt ? '(gesetzt - leer lassen zum Beibehalten)' : '(für Anthropic erforderlich, für Ollama i. d. R. nicht nötig)' %>
+      <input type="password" name="ai_api_key" placeholder="<%= view.ai_api_key_enc_gesetzt ? '•••• gesetzt' : '' %>">
+    </label>
+    <label class="inline"><input type="checkbox" name="ai_api_key_loeschen"> gespeicherten API-Key löschen</label>
+    <label>Zeitlimit (Sekunden)
+      <input type="number" name="ai_timeout_seconds" value="<%= view.ai_timeout_seconds || 30 %>" min="5" max="120">
+    </label>
+    <button type="submit">Speichern</button>
+  </form>
+</div>
+<%- include('../partials/footer') %>

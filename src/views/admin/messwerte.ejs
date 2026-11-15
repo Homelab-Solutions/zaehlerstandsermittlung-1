@@ -1,0 +1,99 @@
+<%- include('../partials/header', { titel, breit: true }) %>
+<h1>Messwerte</h1>
+<% if (erfolg) { %><p class="meldung meldung-erfolg"><%= erfolg %></p><% } %>
+<% if (fehler) { %><p class="meldung meldung-fehler"><%= fehler %></p><% } %>
+
+<%
+function sortLink(spalte, text) {
+  const neueOrder = (query.sort === spalte && query.order !== 'asc') ? 'asc' : 'desc';
+  const params = new URLSearchParams({ ...query, sort: spalte, order: neueOrder, seite: '1' });
+  const pfeil = query.sort === spalte ? (query.order === 'asc' ? ' ▲' : ' ▼') : '';
+%><a href="/admin/messwerte?<%= params.toString() %>"><%= text %><%= pfeil %></a><%
+}
+%>
+
+<div class="karte">
+  <form method="get" action="/admin/messwerte" class="filter-formular">
+    <label>Suche <input type="text" name="q" value="<%= query.q || '' %>" placeholder="Zählernummer, Bezeichnung, Bemerkung"></label>
+    <label>Gruppe
+      <select name="gruppe">
+        <option value="">alle</option>
+        <% gruppen.forEach(g => { %><option value="<%= g.id %>" <%= String(query.gruppe) === String(g.id) ? 'selected' : '' %>><%= g.name %></option><% }) %>
+      </select>
+    </label>
+    <label>Zählerart
+      <select name="zaehlerart">
+        <option value="">alle</option>
+        <% zaehlerarten.forEach(t => { %><option value="<%= t.id %>" <%= String(query.zaehlerart) === String(t.id) ? 'selected' : '' %>><%= t.label %></option><% }) %>
+      </select>
+    </label>
+    <label>Status
+      <select name="status">
+        <option value="">alle</option>
+        <option value="abgelesen" <%= query.status === 'abgelesen' ? 'selected' : '' %>>abgelesen</option>
+        <option value="geschaetzt" <%= query.status === 'geschaetzt' ? 'selected' : '' %>>geschätzt</option>
+      </select>
+    </label>
+    <label>Messart
+      <select name="messart">
+        <option value="">alle</option>
+        <option value="verbrauch" <%= query.messart === 'verbrauch' ? 'selected' : '' %>>Verbrauch</option>
+        <option value="einspeisung" <%= query.messart === 'einspeisung' ? 'selected' : '' %>>Einspeisung</option>
+        <option value="kwh" <%= query.messart === 'kwh' ? 'selected' : '' %>>kWh</option>
+        <option value="m3" <%= query.messart === 'm3' ? 'selected' : '' %>>m³</option>
+      </select>
+    </label>
+    <button type="submit">Filtern</button>
+    <% if (query.q || query.gruppe || query.zaehlerart || query.status || query.messart) { %><a href="/admin/messwerte">Filter zurücksetzen</a><% } %>
+  </form>
+</div>
+
+<div class="karte">
+  <p class="text-schwach"><%= gesamt %> Messwert(e) gefunden - Seite <%= seite %> von <%= seiten %>.</p>
+  <div class="tabelle-wrap">
+  <table class="tabelle">
+    <thead>
+      <tr>
+        <th><%- sortLink('datum', 'Datum') %></th>
+        <th><%- sortLink('zaehler', 'Zähler/Nummer') %></th>
+        <th class="spalte-sekundaer">Messart</th>
+        <th><%- sortLink('wert', 'Wert') %></th>
+        <th><%- sortLink('status', 'Status') %></th>
+        <th class="spalte-sekundaer">Bemerkung</th>
+        <th>Aktionen</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% zeilen.forEach(r => { %>
+        <tr>
+          <td data-label="Datum"><%= new Date(r.reading_at).toLocaleDateString('de-DE') %></td>
+          <td data-label="Zähler/Nummer"><%= r.zaehler_anzeige %><br><span class="text-schwach"><%= r.meter_number %></span></td>
+          <td data-label="Messart" class="spalte-sekundaer"><%= r.messart_label %></td>
+          <td data-label="Wert"><%= formatWert(r.value, r.status) %> <%= r.unit %></td>
+          <td data-label="Status"><%= r.status %></td>
+          <td data-label="Bemerkung" class="spalte-sekundaer"><%= r.bemerkung || '' %></td>
+          <td data-label="Aktionen" class="aktionen-zelle">
+            <a href="/admin/messwerte/<%= r.id %>/bearbeiten">Bearbeiten</a>
+            |
+            <form method="post" action="/admin/messwerte/<%= r.id %>/loeschen" class="inline" onsubmit="return confirm('Diesen Messwert (<%= r.meter_number %>, ' + new Date('<%= r.reading_at %>').toLocaleDateString('de-DE') + ') wirklich endgültig löschen?');">
+              <button type="submit" class="link-knopf link-knopf-gefahr">Löschen</button>
+            </form>
+          </td>
+        </tr>
+      <% }) %>
+      <% if (zeilen.length === 0) { %><tr><td colspan="7">Keine Messwerte gefunden.</td></tr><% } %>
+    </tbody>
+  </table>
+  </div>
+
+  <% if (seiten > 1) { %>
+  <p class="aktionen-zelle">
+    <% for (let s = 1; s <= seiten; s++) { %>
+      <% const params = new URLSearchParams({ ...query, seite: String(s) }); %>
+      <% if (s === seite) { %><strong><%= s %></strong><% } else { %><a href="/admin/messwerte?<%= params.toString() %>"><%= s %></a><% } %>
+      <% if (s < seiten) { %> | <% } %>
+    <% } %>
+  </p>
+  <% } %>
+</div>
+<%- include('../partials/footer') %>

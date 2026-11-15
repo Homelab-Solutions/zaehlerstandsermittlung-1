@@ -1,0 +1,61 @@
+<%- include('../partials/header', { titel }) %>
+<h1>Administration</h1>
+
+<div class="admin-gruppe">
+  <h2>Zähler</h2>
+  <nav class="admin-menue">
+    <a class="admin-kachel" href="/zaehler"><span class="admin-kachel-icon" aria-hidden="true">🔢</span><span>Zählerverwaltung</span></a>
+    <a class="admin-kachel" href="/admin/gruppen"><span class="admin-kachel-icon" aria-hidden="true">🏠</span><span>Zählergruppen</span></a>
+    <a class="admin-kachel" href="/admin/zaehlerarten"><span class="admin-kachel-icon" aria-hidden="true">🧭</span><span>Zählerarten</span></a>
+  </nav>
+</div>
+
+<div class="admin-gruppe">
+  <h2>Messwerte</h2>
+  <nav class="admin-menue">
+    <a class="admin-kachel" href="/admin/messwerte"><span class="admin-kachel-icon" aria-hidden="true">📋</span><span>Messwerte (Tabelle)</span></a>
+    <a class="admin-kachel" href="/admin/korrekturen"><span class="admin-kachel-icon" aria-hidden="true">✅</span><span>Korrekturen<%= anzahlOffeneKorrekturen > 0 ? ' (' + anzahlOffeneKorrekturen + ')' : '' %></span></a>
+    <a class="admin-kachel admin-kachel-gefahr" href="/admin/messwerte-loeschen"><span class="admin-kachel-icon" aria-hidden="true">🗑️</span><span>Messwerte löschen</span></a>
+  </nav>
+</div>
+
+<div class="admin-gruppe">
+  <h2>Import &amp; Export</h2>
+  <nav class="admin-menue">
+    <a class="admin-kachel" href="/export"><span class="admin-kachel-icon" aria-hidden="true">📤</span><span>Messwerte exportieren</span></a>
+    <a class="admin-kachel" href="/import"><span class="admin-kachel-icon" aria-hidden="true">📥</span><span>Messwerte importieren</span></a>
+    <a class="admin-kachel" href="/admin/zaehler-stammdaten/export"><span class="admin-kachel-icon" aria-hidden="true">📤</span><span>Zähler-Stammdaten exportieren</span></a>
+    <a class="admin-kachel" href="/admin/zaehler-stammdaten/import"><span class="admin-kachel-icon" aria-hidden="true">📥</span><span>Zähler-Stammdaten importieren</span></a>
+  </nav>
+</div>
+
+<div class="admin-gruppe">
+  <h2>Backup</h2>
+  <nav class="admin-menue">
+    <a class="admin-kachel" href="/admin/backup"><span class="admin-kachel-icon" aria-hidden="true">💾</span><span>Vollbackup / Wiederherstellung</span></a>
+    <a class="admin-kachel" href="/admin/datenbank"><span class="admin-kachel-icon" aria-hidden="true">🔄</span><span>Datenbankwechsel</span></a>
+    <a class="admin-kachel admin-kachel-gefahr" href="/admin/reset"><span class="admin-kachel-icon" aria-hidden="true">⚠️</span><span>Datenbank zurücksetzen</span></a>
+  </nav>
+</div>
+
+<div class="admin-gruppe">
+  <h2>System</h2>
+  <nav class="admin-menue">
+    <a class="admin-kachel" href="/admin/statistik"><span class="admin-kachel-icon" aria-hidden="true">📊</span><span>Statistik</span></a>
+    <a class="admin-kachel" href="/admin/benutzer"><span class="admin-kachel-icon" aria-hidden="true">👤</span><span>Benutzerverwaltung</span></a>
+    <a class="admin-kachel" href="/admin/ki"><span class="admin-kachel-icon" aria-hidden="true">🤖</span><span>KI-Einstellungen</span></a>
+    <a class="admin-kachel" href="/admin/smtp"><span class="admin-kachel-icon" aria-hidden="true">✉️</span><span>SMTP-Einstellungen</span></a>
+    <a class="admin-kachel" href="/admin/api"><span class="admin-kachel-icon" aria-hidden="true">🔌</span><span>Externe Lese-API</span></a>
+    <a class="admin-kachel" href="/admin/system"><span class="admin-kachel-icon" aria-hidden="true">🖥️</span><span>System/Datenbank</span></a>
+    <a class="admin-kachel" href="/admin/audit"><span class="admin-kachel-icon" aria-hidden="true">📜</span><span>Audit-Protokoll</span></a>
+  </nav>
+</div>
+
+<div class="admin-gruppe">
+  <h2>Rechtliches</h2>
+  <nav class="admin-menue">
+    <a class="admin-kachel" href="/admin/rechtliches"><span class="admin-kachel-icon" aria-hidden="true">⚖️</span><span>Rechtliches bearbeiten</span></a>
+  </nav>
+</div>
+
+<%- include('../partials/footer') %>

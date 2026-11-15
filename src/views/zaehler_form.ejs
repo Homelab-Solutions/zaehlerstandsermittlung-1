@@ -1,0 +1,158 @@
+<%- include('partials/header', { titel }) %>
+<h1><%= titel %></h1>
+<% if (fehler) { %><p class="meldung meldung-fehler"><%= fehler %></p><% } %>
+
+<div class="karte">
+  <form method="post" action="<%= zaehler ? ('/zaehler/' + zaehler.id) : '/zaehler' %>" class="formular">
+    <label>Zählerart
+      <select name="meter_type_id" id="meter_type_id" required>
+        <% meterTypes.forEach(t => { %>
+          <option value="<%= t.id %>" data-betreiber-versorger-standard="<%= t.betreiber_versorger_standard ? '1' : '0' %>" <%= zaehler && zaehler.meter_type_id === t.id ? 'selected' : '' %>><%= t.label %></option>
+        <% }) %>
+      </select>
+    </label>
+    <label>Zählergruppe
+      <select name="group_id" required>
+        <option value="">bitte wählen</option>
+        <% gruppen.forEach(g => { %>
+          <option value="<%= g.id %>" <%= zaehler && Number(zaehler.group_id) === g.id ? 'selected' : '' %>><%= g.name %></option>
+        <% }) %>
+      </select>
+    </label>
+    <label>Anzeige-Bezeichnung (optional, z. B. "Kaltwasser")
+      <input type="text" name="anzeige_bezeichnung" value="<%= zaehler && zaehler.anzeige_bezeichnung || '' %>" placeholder="ohne Eingabe wird der Name der Zählerart angezeigt">
+    </label>
+    <label>Zählernummer
+      <input type="text" name="number" value="<%= zaehler ? zaehler.number : '' %>" required>
+    </label>
+    <label>Hersteller
+      <input type="text" name="manufacturer" value="<%= zaehler && zaehler.manufacturer || '' %>">
+    </label>
+    <label>Betrieben/gewartet durch
+      <select name="betreiber_typ" id="betreiber_typ">
+        <option value="eigentuemer" <%= !zaehler || zaehler.betreiber_typ !== 'energieversorger' ? 'selected' : '' %>>Eigentümer</option>
+        <option value="energieversorger" <%= zaehler && zaehler.betreiber_typ === 'energieversorger' ? 'selected' : '' %>>Energieversorger/Betreiber</option>
+      </select>
+    </label>
+    <label>Name des Energieversorgers/Betreibers (falls zutreffend)
+      <input type="text" name="messbetreiber" value="<%= zaehler && zaehler.messbetreiber || '' %>" placeholder="z. B. Stadtwerke, nur bei Energieversorger-Zähler">
+    </label>
+    <label class="inline">
+      <input type="checkbox" name="eichfrist_benachrichtigen" id="eichfrist_benachrichtigen" <%= !zaehler || zaehler.eichfrist_benachrichtigen ? 'checked' : '' %>>
+      Eichfrist-Erinnerung für diesen Zähler aktiv
+    </label>
+    <p class="text-schwach">Bei „Energieversorger/Betreiber" ist die Erinnerung an den Eigentümer standardmäßig aus (der Versorger kümmert sich selbst um die Eichung); bei „Eigentümer" standardmäßig an (Vorlaufzeit siehe SMTP-Einstellungen, Standard ein Monat).</p>
+    <label>Typ/Bezeichnung
+      <input type="text" name="type_label" value="<%= zaehler && zaehler.type_label || '' %>">
+    </label>
+    <label>Einheit
+      <input type="text" name="unit" value="<%= zaehler ? zaehler.unit : 'm³' %>" required>
+    </label>
+    <label>Eichdatum
+      <input type="date" name="eich_datum" value="<%= zaehler && zaehler.eich_datum ? zaehler.eich_datum.slice(0,10) : '' %>">
+    </label>
+    <label>Eichfrist
+      <input type="date" name="eich_frist" value="<%= zaehler && zaehler.eich_frist ? zaehler.eich_frist.slice(0,10) : '' %>">
+    </label>
+    <label>Eichdatum/Eichfrist anzeigen
+      <select name="eichdaten_anzeigen">
+        <option value="" <%= !zaehler || zaehler.eichdaten_anzeigen === null || zaehler.eichdaten_anzeigen === undefined ? 'selected' : '' %>>Vorgabe der Zählerart verwenden</option>
+        <option value="1" <%= zaehler && (zaehler.eichdaten_anzeigen === true || zaehler.eichdaten_anzeigen === 1) ? 'selected' : '' %>>Ja, immer anzeigen</option>
+        <option value="0" <%= zaehler && (zaehler.eichdaten_anzeigen === false || zaehler.eichdaten_anzeigen === 0) ? 'selected' : '' %>>Nein, nie anzeigen</option>
+      </select>
+    </label>
+    <label>Einbaudatum
+      <input type="date" name="einbau_datum" value="<%= zaehler && zaehler.einbau_datum ? zaehler.einbau_datum.slice(0,10) : '' %>">
+    </label>
+    <label>Ausbaudatum
+      <input type="date" name="ausbau_datum" value="<%= zaehler && zaehler.ausbau_datum ? zaehler.ausbau_datum.slice(0,10) : '' %>">
+    </label>
+    <label>Bemerkung
+      <textarea name="bemerkung" rows="2"><%= zaehler && zaehler.bemerkung || '' %></textarea>
+    </label>
+    <label class="inline"><input type="checkbox" name="active" <%= !zaehler || zaehler.active ? 'checked' : '' %>> aktiv</label>
+
+    <% if (!zaehler && aktiveZaehler && aktiveZaehler.length > 0) { %>
+    <fieldset>
+      <legend>Zählerwechsel (optional)</legend>
+      <label>Dieser neue Zähler ersetzt
+        <select name="ersetzt_meter_id">
+          <option value="">— kein Zählerwechsel —</option>
+          <% aktiveZaehler.forEach(a => { %>
+            <option value="<%= a.id %>"><%= a.number %></option>
+          <% }) %>
+        </select>
+      </label>
+      <p class="text-schwach">Der ausgewählte alte Zähler wird beim Speichern zum heutigen Datum deaktiviert (ausgebaut). Seine Messwerte bleiben unverändert erhalten; es wird nie über den Wechsel hinweg ein Verbrauch berechnet.</p>
+    </fieldset>
+    <% } %>
+
+    <button type="submit">Speichern</button>
+  </form>
+</div>
+
+<% if (zaehler && zaehler.active) { %>
+<div class="karte" id="wechsel">
+  <h2>Zählerwechsel</h2>
+  <p class="text-schwach">Schließt diesen Zähler zum Ausbaudatum ab (Historie bleibt unverändert) und legt einen neuen Zähler derselben Zählerart, Gruppe und Bezeichnung an. Es wird nie über den Wechsel hinweg ein Verbrauch berechnet.</p>
+  <form method="post" action="/zaehler/<%= zaehler.id %>/wechsel" class="formular">
+    <label>Ausbaudatum (alter Zähler)
+      <input type="date" name="ausbau_datum" required value="<%= new Date().toISOString().slice(0,10) %>">
+    </label>
+    <label>Abschlussstand alter Zähler (optional)
+      <input type="text" name="abschluss_wert" inputmode="decimal">
+    </label>
+    <hr>
+    <label>Neue Zählernummer
+      <input type="text" name="neu_number" required>
+    </label>
+    <label>Hersteller (neu)
+      <input type="text" name="neu_manufacturer">
+    </label>
+    <label>Messbetreiber (neu)
+      <input type="text" name="neu_messbetreiber" value="<%= zaehler.messbetreiber || '' %>">
+    </label>
+    <label>Typ/Bezeichnung (neu)
+      <input type="text" name="neu_type_label">
+    </label>
+    <label>Eichdatum (neu)
+      <input type="date" name="neu_eich_datum">
+    </label>
+    <label>Eichfrist (neu)
+      <input type="date" name="neu_eich_frist">
+    </label>
+    <label>Einbaustand / Übergangsstand neuer Zähler (optional)
+      <input type="text" name="einbau_wert" inputmode="decimal">
+    </label>
+    <p class="text-schwach">Betrieben/gewartet durch, Gruppe, Bezeichnung und die Einstellung der Eichfrist-Erinnerung werden vom alten Zähler übernommen.</p>
+    <button type="submit">Zählerwechsel durchführen</button>
+  </form>
+</div>
+<% } %>
+
+<script>
+(function () {
+  var istNeu = <%- JSON.stringify(!zaehler) %>;
+  var betreiberSelect = document.getElementById('betreiber_typ');
+  var benachrichtigenBox = document.getElementById('eichfrist_benachrichtigen');
+  if (istNeu && betreiberSelect && benachrichtigenBox) {
+    betreiberSelect.addEventListener('change', function () {
+      benachrichtigenBox.checked = betreiberSelect.value !== 'energieversorger';
+    });
+  }
+
+  // Vorgabe der gewaehlten Zaehlerart ("Vom Versorger betrieben") als
+  // Voreinstellung fuer einen neuen Zaehler uebernehmen - bleibt jederzeit
+  // manuell ueberschreibbar (Auftrag Abschnitt 2).
+  var meterTypeSelect = document.getElementById('meter_type_id');
+  if (istNeu && meterTypeSelect && betreiberSelect) {
+    meterTypeSelect.addEventListener('change', function () {
+      var option = meterTypeSelect.options[meterTypeSelect.selectedIndex];
+      var standard = option && option.getAttribute('data-betreiber-versorger-standard') === '1';
+      betreiberSelect.value = standard ? 'energieversorger' : 'eigentuemer';
+      betreiberSelect.dispatchEvent(new Event('change'));
+    });
+  }
+})();
+</script>
+<%- include('partials/footer') %>

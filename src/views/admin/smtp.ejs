@@ -1,0 +1,40 @@
+<%- include('../partials/header', { titel }) %>
+<h1>SMTP-Einstellungen</h1>
+<% if (erfolg) { %><p class="meldung meldung-erfolg"><%= erfolg %></p><% } %>
+<% if (fehler) { %><p class="meldung meldung-fehler"><%= fehler %></p><% } %>
+
+<div class="karte">
+  <form method="post" action="/admin/smtp" class="formular">
+    <label class="inline"><input type="checkbox" name="smtp_enabled" <%= view.smtp_enabled === 'true' ? 'checked' : '' %>> SMTP aktivieren</label>
+    <label>Server (Host)<input type="text" name="smtp_host" value="<%= view.smtp_host || '' %>"></label>
+    <label>Port<input type="number" name="smtp_port" value="<%= view.smtp_port || 587 %>"></label>
+    <label>Verschlüsselung
+      <select name="smtp_secure_mode">
+        <option value="none" <%= view.smtp_secure_mode === 'none' ? 'selected' : '' %>>Keine</option>
+        <option value="starttls" <%= view.smtp_secure_mode === 'starttls' ? 'selected' : '' %>>STARTTLS</option>
+        <option value="tls" <%= view.smtp_secure_mode === 'tls' ? 'selected' : '' %>>TLS (implizit, meist Port 465)</option>
+      </select>
+    </label>
+    <label>Benutzername<input type="text" name="smtp_user" value="<%= view.smtp_user || '' %>"></label>
+    <label>Passwort <%= view.smtp_password_enc_gesetzt ? '(gesetzt - leer lassen zum Beibehalten)' : '' %>
+      <input type="password" name="smtp_password" placeholder="<%= view.smtp_password_enc_gesetzt ? '•••• gesetzt' : '' %>">
+    </label>
+    <label class="inline"><input type="checkbox" name="smtp_password_loeschen"> gespeichertes Passwort löschen</label>
+    <label>Absender (From)<input type="text" name="smtp_from" value="<%= view.smtp_from || '' %>" placeholder="z. B. zaehlerstand@example.org"></label>
+    <label>Eichfrist-Warnung, Tage vorher<input type="number" name="notify_eichfrist_days_before" value="<%= view.notify_eichfrist_days_before || 30 %>"></label>
+    <label>Empfänger für Eichfrist-Warnung (kommagetrennt)<textarea name="notify_recipients" rows="2"><%= view.notify_recipients || '' %></textarea></label>
+    <label class="inline"><input type="checkbox" name="notify_messwert_enabled" <%= view.notify_messwert_enabled === 'true' ? 'checked' : '' %>> Benachrichtigung bei neuen Messwerten aktivieren</label>
+    <label>Empfänger bei neuen Messwerten (kommagetrennt, eigene Liste - unabhängig von der Eichfrist-Warnung oben)<textarea name="notify_messwert_recipients" rows="2"><%= view.notify_messwert_recipients || '' %></textarea></label>
+    <p class="text-schwach">Gilt nur für neu erfasste Messwerte (Menüpunkt "Messwerte erfassen"); Korrekturen, Admin-Bearbeitungen, Löschungen und Importe lösen keine E-Mail aus.</p>
+    <button type="submit">Speichern</button>
+  </form>
+</div>
+
+<div class="karte">
+  <h2>Testversand</h2>
+  <form method="post" action="/admin/smtp/test" class="formular">
+    <label>Empfänger<input type="email" name="test_empfaenger" placeholder="<%= user.email %>"></label>
+    <button type="submit">Test-E-Mail senden</button>
+  </form>
+</div>
+<%- include('../partials/footer') %>

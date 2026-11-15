@@ -1,0 +1,53 @@
+<%- include('partials/header', { titel }) %>
+<h1>Diagramme</h1>
+
+<div class="karte">
+  <form id="diagramm-formular" class="formular">
+    <label>Zählerarten (mehrere möglich, nur bei gleicher Einheit sinnvoll vergleichbar)
+      <select name="meterTypeIds" id="meterTypeIds" multiple size="6">
+        <% meterTypes.forEach(t => { %>
+          <option value="<%= t.id %>" data-unit="<%= t.unit %>"><%= t.label %> (<%= t.unit %>)</option>
+        <% }) %>
+      </select>
+    </label>
+    <label>Von
+      <input type="date" name="von" id="von">
+    </label>
+    <label>Bis
+      <input type="date" name="bis" id="bis">
+    </label>
+    <label class="inline"><input type="checkbox" id="vorjahr"> Vorjahreszeitraum einblenden</label>
+    <button type="button" id="diagramm-laden">Anzeigen</button>
+  </form>
+</div>
+
+<div class="karte">
+  <canvas id="zaehler-chart" height="100"></canvas>
+  <p class="text-schwach">Schätzwerte sind als Rauten markiert, Werte nach einem Zählerwechsel beginnen als neue Linie (kein Verbrauch wird über den Wechsel hinweg berechnet).</p>
+</div>
+
+<div class="karte">
+  <h2>Verbrauch je Ablesezeitraum</h2>
+  <div id="verbrauch-tabelle"></div>
+</div>
+
+<div class="karte">
+  <h2>Prognose (ohne KI)</h2>
+  <p class="text-schwach">Unverbindliche statistische Hochrechnung aus der bisherigen Messhistorie (bei Heizung/Gas saisonal, siehe Hinweise unten). Wird nirgends gespeichert und nicht exportiert.</p>
+  <form id="prognose-formular" class="formular">
+    <label>Zählerart
+      <select name="meterTypeId" id="prognose-typ">
+        <% meterTypes.forEach(t => { %><option value="<%= t.id %>"><%= t.label %></option><% }) %>
+      </select>
+    </label>
+    <label>Prognosezeitraum (Tage)
+      <input type="number" name="tage" id="prognose-tage" value="90" min="1" max="730">
+    </label>
+    <button type="button" id="prognose-laden">Prognose berechnen</button>
+  </form>
+  <div id="prognose-ergebnis"></div>
+</div>
+
+<script src="/vendor/chartjs/chart.umd.js"></script>
+<script src="/static/js/diagramme.js"></script>
+<%- include('partials/footer') %>

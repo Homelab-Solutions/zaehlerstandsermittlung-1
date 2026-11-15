@@ -1,0 +1,80 @@
+<%- include('../partials/header', { titel }) %>
+<h1>Zähler-Stammdaten importieren</h1>
+<% if (erfolg) { %><p class="meldung meldung-erfolg"><%= erfolg %></p><% } %>
+<% if (fehler) { %><p class="meldung meldung-fehler"><%= fehler %></p><% } %>
+
+<div class="karte">
+  <p>Importiert ausschließlich Zählergruppen, Zählerarten und Zähler (Stammdaten) - <strong>keine Messwerte, Benutzerkonten, Fotos oder Einstellungen</strong>. Funktioniert auch mit einer Datei ohne Messwerte (leeres <code>readings</code>-Array), z. B. der Vorlagendatei unter <code>data/vorlagen/</code>.</p>
+  <p>Unterstütztes Format: JSON mit den Feldern <code>meter_groups</code>, <code>meter_types</code>, <code>meters</code> - sowohl aus "Zähler-Stammdaten exportieren" als auch aus einem vollständigen Messwerte-JSON-Export (Admin → Export → JSON).</p>
+  <p>Bereits vorhandene Einträge (Vergleich: Gruppenname, technischer Zählerart-Schlüssel, Zählernummer) werden <strong>nie überschrieben</strong>, nur fehlende werden ergänzt. Die Reihenfolge Gruppen → Zählerarten → Zähler wird automatisch eingehalten; der Schreibvorgang ist transaktional (bei einem Fehler wird nichts verändert).</p>
+  <form method="post" action="/admin/zaehler-stammdaten/import/vorschau" enctype="multipart/form-data" class="formular">
+    <label>Datei
+      <input type="file" name="datei" accept=".json" required>
+    </label>
+    <button type="submit">Vorschau erzeugen</button>
+  </form>
+</div>
+
+<% if (vorschau) { %>
+<div class="karte">
+  <h2>Vorschau</h2>
+  <p>
+    Zählergruppen: <%= vorschau.zusammenfassung.neueGruppen %> neu von <%= vorschau.zusammenfassung.gesamtGruppen %> im Export |
+    Zählerarten: <%= vorschau.zusammenfassung.neueTypen %> neu von <%= vorschau.zusammenfassung.gesamtTypen %><%= vorschau.zusammenfassung.vorhandeneAbweichendeTypen > 0 ? (' (' + vorschau.zusammenfassung.vorhandeneAbweichendeTypen + ' bereits vorhanden mit Abweichung, siehe unten)') : '' %> |
+    Zähler: <%= vorschau.zusammenfassung.neueZaehler %> neu von <%= vorschau.zusammenfassung.gesamtZaehler %>
+    <% if (vorschau.zusammenfassung.konflikteZaehler > 0) { %> | <strong class="text-fehler"><%= vorschau.zusammenfassung.konflikteZaehler %> Konflikt(e) - werden übersprungen, siehe unten</strong><% } %>
+  </p>
+
+  <h3>Zählergruppen</h3>
+  <div class="tabelle-wrap"><table class="tabelle">
+    <thead><tr><th>Name</th><th>Status</th></tr></thead>
+    <tbody>
+      <% vorschau.gruppen.forEach(g => { %>
+        <tr><td data-label="Name"><%= g.name %></td><td data-label="Status"><%= g.status === 'neu' ? 'neu anzulegen' : 'bereits vorhanden (unverändert)' %></td></tr>
+      <% }) %>
+      <% if (vorschau.gruppen.length === 0) { %><tr><td colspan="2">Keine Zählergruppen im Export.</td></tr><% } %>
+    </tbody>
+  </table></div>
+
+  <h3>Zählerarten</h3>
+  <div class="tabelle-wrap"><table class="tabelle">
+    <thead><tr><th>Bezeichnung</th><th>Schlüssel</th><th>Status</th><th>Hinweis</th></tr></thead>
+    <tbody>
+      <% vorschau.typen.forEach(t => { %>
+        <tr class="<%= t.status === 'konflikt' ? 'zeile-fehler' : (t.status === 'vorhanden_abweichend' ? 'zeile-warnung' : '') %>">
+          <td data-label="Bezeichnung"><%= t.label %></td>
+          <td data-label="Schlüssel"><%= t.schluessel || '' %></td>
+          <td data-label="Status"><%= { neu: 'neu anzulegen', vorhanden: 'bereits vorhanden (unverändert)', vorhanden_abweichend: 'bereits vorhanden (unverändert)', konflikt: 'Konflikt' }[t.status] %></td>
+          <td data-label="Hinweis"><%= t.grund || '' %></td>
+        </tr>
+      <% }) %>
+      <% if (vorschau.typen.length === 0) { %><tr><td colspan="4">Keine Zählerarten im Export.</td></tr><% } %>
+    </tbody>
+  </table></div>
+
+  <h3>Zähler</h3>
+  <div class="tabelle-wrap"><table class="tabelle">
+    <thead><tr><th>Nummer</th><th>Status</th><th>Hinweis</th></tr></thead>
+    <tbody>
+      <% vorschau.zaehler.forEach(z => { %>
+        <tr class="<%= z.status === 'konflikt' ? 'zeile-fehler' : '' %>">
+          <td data-label="Nummer"><%= z.nummer %></td>
+          <td data-label="Status"><%= { neu: 'neu anzulegen', vorhanden: 'bereits vorhanden (unverändert)', konflikt: 'Konflikt - wird übersprungen' }[z.status] %></td>
+          <td data-label="Hinweis"><%= z.grund || '' %></td>
+        </tr>
+      <% }) %>
+      <% if (vorschau.zaehler.length === 0) { %><tr><td colspan="3">Keine Zähler im Export.</td></tr><% } %>
+    </tbody>
+  </table></div>
+
+  <% if (vorschau.zusammenfassung.neueGruppen > 0 || vorschau.zusammenfassung.neueTypen > 0 || vorschau.zusammenfassung.neueZaehler > 0) { %>
+  <form method="post" action="/admin/zaehler-stammdaten/import/uebernehmen" style="margin-top:1rem;">
+    <input type="hidden" name="token" value="<%= token %>">
+    <button type="submit">Import übernehmen (<%= vorschau.zusammenfassung.neueGruppen %> Gruppe(n), <%= vorschau.zusammenfassung.neueTypen %> Zählerart(en), <%= vorschau.zusammenfassung.neueZaehler %> Zähler)</button>
+  </form>
+  <% } else { %>
+  <p class="text-schwach" style="margin-top:1rem;">Alle erkannten Einträge sind bereits vorhanden - nichts Neues zu übernehmen.</p>
+  <% } %>
+</div>
+<% } %>
+<%- include('../partials/footer') %>

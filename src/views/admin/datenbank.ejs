@@ -1,0 +1,108 @@
+<%- include('../partials/header', { titel }) %>
+<h1>Datenbankwechsel</h1>
+<p class="text-schwach">Wechselt die Datenverbindung zwischen der lokalen SQLite-Datei und einer externen MariaDB (und umgekehrt), inklusive Prüfung, Pflicht-Backup, Migration und Verifikation. Details und nötige manuelle Schritte stehen im README.</p>
+<% if (erfolg) { %><p class="meldung meldung-erfolg"><%= erfolg %></p><% } %>
+<% if (fehler) { %><p class="meldung meldung-fehler"><%= fehler %></p><% } %>
+
+<div class="karte">
+  <h2>Aktuell aktive Verbindung</h2>
+  <% if (aktuelle.treiber === 'mariadb') { %>
+    <p>MariaDB: <%= aktuelle.host %>:<%= aktuelle.port %> / <%= aktuelle.datenbank %> (Benutzer <%= aktuelle.benutzer %>)</p>
+  <% } else { %>
+    <p>SQLite-Datei: <%= aktuelle.datei %></p>
+  <% } %>
+</div>
+
+<div class="karte">
+  <h2>Schritt 1: Zielverbindung prüfen</h2>
+  <form method="post" action="/admin/datenbank/testen" class="formular">
+    <label>Zieltreiber
+      <select name="ziel_treiber" id="ziel_treiber" onchange="document.getElementById('mariadb-felder').style.display = this.value === 'mariadb' ? 'block' : 'none'">
+        <option value="sqlite">Lokale SQLite-Datei</option>
+        <option value="mariadb" selected>Externe MariaDB</option>
+      </select>
+    </label>
+    <div id="mariadb-felder">
+      <label>Host <input type="text" name="ziel_host" placeholder="z. B. <db-host>"></label>
+      <label>Port <input type="number" name="ziel_port" value="3306"></label>
+      <label>Benutzer <input type="text" name="ziel_user" placeholder="z. B. appfactory_admin"></label>
+      <label>Passwort <input type="password" name="ziel_passwort"></label>
+      <label>Datenbankname <input type="text" name="ziel_datenbank" placeholder="z. B. zaehlerstandsermittlung-1_db"></label>
+    </div>
+    <p class="text-schwach">Die Zieldatenbank muss vor der Migration leer sein (die App legt fehlende Tabellen selbst an, sofern die Rechte ausreichen).</p>
+    <button type="submit">Verbindung testen</button>
+  </form>
+</div>
+
+<% if (eintrag) { %>
+<div class="karte">
+  <h2>Schritt 2: Backup der aktuellen Daten</h2>
+  <p class="text-schwach">Pflicht vor der Migration - ein vollständiger JSON-Export der aktuell aktiven Datenbank.</p>
+  <form method="post" action="/admin/datenbank/<%= token %>/export">
+    <button type="submit">Backup jetzt erzeugen</button>
+  </form>
+  <% if (eintrag.backup) { %>
+    <p><a href="/admin/datenbank/<%= token %>/download" id="db-wechsel-download-link" data-token="<%= token %>">Backup herunterladen</a> (<%= eintrag.backup.dateiname %>)<% if (eintrag.backup.heruntergeladen) { %> - heruntergeladen<% } %></p>
+    <p class="text-schwach">Nach dem vollständigen Download startet die Migration automatisch.</p>
+    <p id="db-wechsel-status" class="text-schwach" role="status" aria-live="polite"></p>
+  <% } %>
+</div>
+
+<div class="karte">
+  <h2>Schritt 3: Migrieren und verifizieren</h2>
+  <% if (!eintrag.backup || !eintrag.backup.heruntergeladen) { %>
+    <p class="text-schwach">Bitte zuerst das Backup erzeugen und herunterladen - die Migration startet danach automatisch.</p>
+  <% } else { %>
+    <p class="text-schwach">Normalerweise bereits automatisch nach dem Backup-Download gestartet. Dieser Knopf ist nur zur Wiederaufnahme, falls das nicht stattfand (z. B. nach einem Neuladen der Seite).</p>
+    <form method="post" action="/admin/datenbank/<%= token %>/migrieren">
+      <button type="submit">Schema anlegen, Daten kopieren und verifizieren</button>
+    </form>
+  <% } %>
+
+  <% if (eintrag.verifikation) { %>
+    <div class="tabelle-wrap">
+      <table class="tabelle">
+        <thead><tr><th>Tabelle</th><th>Quelle</th><th>Ziel</th><th>Status</th></tr></thead>
+        <tbody>
+          <% eintrag.verifikation.ergebnisse.forEach(r => { %>
+            <tr>
+              <td data-label="Tabelle"><%= r.tabelle %></td>
+              <td data-label="Quelle"><%= r.quelle %></td>
+              <td data-label="Ziel"><%= r.ziel %></td>
+              <td data-label="Status"><%= r.ok ? 'OK' : 'ABWEICHUNG' %></td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  <% } %>
+</div>
+
+<% if (eintrag.schritt === 'migriert' && eintrag.verifikation && eintrag.verifikation.ok) { %>
+<div class="karte meldung-warnung-box">
+  <h2>Schritt 4: Wechsel übernehmen</h2>
+  <p><strong>Achtung:</strong> Danach wird die Zielverbindung in die <code>.env</code> dieses Projekts geschrieben. Die laufende Anwendung nutzt bis zum Neuanlegen des Containers weiterhin die bisherige Verbindung - die bisherige Datenbank bleibt dabei unverändert erhalten.</p>
+  <form method="post" action="/admin/datenbank/<%= token %>/aktivieren" class="formular">
+    <label>Bitte exakt "<%= bestaetigungstext %>" eingeben:
+      <input type="text" name="bestaetigungstext" required>
+    </label>
+    <button type="submit" class="knopf-gefahr">Wechsel jetzt übernehmen</button>
+  </form>
+</div>
+<% } %>
+<% } %>
+
+<% if (sqliteDateiVorhanden && aktuelle.treiber === 'mariadb') { %>
+<div class="karte">
+  <h2>Alte lokale SQLite-Datei entfernen</h2>
+  <p class="text-schwach">Nur sinnvoll, nachdem die Anwendung bereits erfolgreich und bestätigt mit MariaDB läuft. Die Datei wird nicht automatisch gelöscht.</p>
+  <form method="post" action="/admin/datenbank/alte-sqlite-entfernen" class="formular">
+    <label>Bitte exakt "SQLITE DATEI LOESCHEN" eingeben:
+      <input type="text" name="bestaetigungstext" required>
+    </label>
+    <button type="submit" class="knopf-gefahr">Alte SQLite-Datei entfernen</button>
+  </form>
+</div>
+<% } %>
+<script src="/static/js/datenbank.js"></script>
+<%- include('../partials/footer') %>

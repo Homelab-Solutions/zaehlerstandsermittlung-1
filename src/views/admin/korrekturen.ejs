@@ -1,0 +1,32 @@
+<%- include('../partials/header', { titel }) %>
+<h1>Korrekturen</h1>
+<% if (erfolg) { %><p class="meldung meldung-erfolg"><%= erfolg %></p><% } %>
+<% if (fehler) { %><p class="meldung meldung-fehler"><%= fehler %></p><% } %>
+
+<div class="karte">
+  <p class="text-schwach">Von Benutzern vorgeschlagene Korrekturen bestehender Messwerte - erst nach Genehmigung wird der Messwert tatsächlich geändert.</p>
+  <% if (offene.length === 0) { %>
+    <p class="text-schwach">Keine offenen Korrekturen.</p>
+  <% } %>
+  <% offene.forEach(k => { %>
+    <div class="karte">
+      <h2>Zähler <%= k.meter_number %><%= k.group_name ? ' - ' + k.group_name : '' %><%= k.anzeige_bezeichnung ? ' – ' + k.anzeige_bezeichnung : '' %> (<%= k.type_label_name %>)</h2>
+      <p>
+        Bisher: <strong><%= formatWert(k.aktueller_wert, k.aktueller_status) %> <%= k.unit %></strong> am <%= new Date(k.aktuelles_datum).toLocaleDateString('de-DE') %><br>
+        Vorschlag: <strong><%= formatWert(k.vorgeschlagener_wert, 'abgelesen') %> <%= k.unit %></strong><%= k.vorgeschlagenes_datum ? (' am ' + new Date(k.vorgeschlagenes_datum).toLocaleDateString('de-DE')) : ' (Datum unverändert)' %>
+      </p>
+      <p>Begründung: <%= k.bemerkung %></p>
+      <p class="text-schwach">Eingereicht von <%= k.ersteller_email || 'unbekannt' %> am <%= new Date(k.erstellt_am).toLocaleString('de-DE') %></p>
+      <form method="post" action="/admin/korrekturen/<%= k.id %>/entscheiden" class="formular">
+        <label>Kommentar (optional)
+          <input type="text" name="admin_kommentar">
+        </label>
+        <div class="inline">
+          <button type="submit" name="entscheidung" value="genehmigen">Genehmigen</button>
+          <button type="submit" name="entscheidung" value="ablehnen" class="knopf-sekundaer">Ablehnen</button>
+        </div>
+      </form>
+    </div>
+  <% }) %>
+</div>
+<%- include('../partials/footer') %>

@@ -1,0 +1,35 @@
+<%- include('../partials/header', { titel }) %>
+<h1>Zählergruppen</h1>
+<p class="text-schwach">Gruppen wie „Haupthaus" oder „Mietwohnung" ordnen Zähler räumlich zu und steuern, für welche Zähler ein Benutzer Messwerte erfassen darf (siehe Benutzerverwaltung). Bereits verwendete Gruppen werden nicht gelöscht, nur deaktiviert.</p>
+<% if (erfolg) { %><p class="meldung meldung-erfolg"><%= erfolg %></p><% } %>
+<% if (fehler) { %><p class="meldung meldung-fehler"><%= fehler %></p><% } %>
+<p><a href="/admin/gruppen/neu" class="knopf-link">+ Neue Zählergruppe</a></p>
+
+<div class="tabelle-wrap">
+<table class="tabelle">
+  <thead>
+    <tr><th>Name</th><th>Zähler</th><th>Status</th><th>Aktionen</th></tr>
+  </thead>
+  <tbody>
+    <% gruppen.forEach(g => { %>
+      <tr class="<%= g.active ? '' : 'zeile-inaktiv' %>">
+        <td data-label="Name"><%= g.name %></td>
+        <td data-label="Zähler"><%= g.anzahl_zaehler %></td>
+        <td data-label="Status"><%= g.active ? 'aktiv' : 'deaktiviert' %></td>
+        <td data-label="Aktionen" class="aktionen-zelle">
+          <a href="/admin/gruppen/<%= g.id %>/bearbeiten">Bearbeiten</a>
+          |
+          <form method="post" action="/admin/gruppen/<%= g.id %>/aktivieren" class="inline">
+            <input type="hidden" name="aktiv" value="<%= g.active ? '0' : '1' %>">
+            <button type="submit" class="link-knopf"><%= g.active ? 'Deaktivieren' : 'Aktivieren' %></button>
+          </form>
+        </td>
+      </tr>
+    <% }) %>
+    <% if (gruppen.length === 0) { %>
+      <tr><td colspan="4" class="text-schwach">Noch keine Zählergruppen angelegt.</td></tr>
+    <% } %>
+  </tbody>
+</table>
+</div>
+<%- include('../partials/footer') %>

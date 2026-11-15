@@ -1,0 +1,103 @@
+<%- include('partials/header', { titel }) %>
+<h1>Messwert erfassen</h1>
+
+<% if (erfolg) { %><p class="meldung meldung-erfolg"><%= erfolg %></p><% } %>
+<% if (fehler) { %><p class="meldung meldung-fehler"><%= fehler %></p><% } %>
+
+<div class="karte">
+  <h2>Foto-Erkennung</h2>
+  <% if (aiEnabled) { %>
+    <p id="ki-status" class="text-schwach" aria-live="polite"><span id="ki-status-punkt" class="ki-status-punkt ki-status-punkt-unbekannt" aria-hidden="true"></span> KI-Verfügbarkeit wird geprüft …</p>
+    <div id="foto-aktionen-bereich" class="verborgen">
+      <p class="text-schwach">Foto aufnehmen oder hochladen. Ein KI-Vorschlag muss immer geprüft und bestätigt werden, bevor er gespeichert wird.</p>
+      <div class="foto-aktionen">
+        <label class="knopf knopf-sekundaer foto-aktion-knopf">
+          📷 Foto aufnehmen
+          <input type="file" id="foto-kamera-input" accept="image/*" capture="environment" class="verborgen-eingabe">
+        </label>
+        <label class="knopf knopf-sekundaer foto-aktion-knopf">
+          🖼️ Datei hochladen
+          <input type="file" id="foto-datei-input" accept="image/jpeg,image/png,image/webp" class="verborgen-eingabe">
+        </label>
+        <button type="button" id="foto-analysieren-knopf" disabled>Foto analysieren</button>
+      </div>
+      <div id="foto-status" class="text-schwach" aria-live="polite"></div>
+      <div id="foto-lade-anzeige" class="lade-anzeige verborgen" aria-hidden="true"><span class="spinner"></span> Foto wird analysiert …</div>
+      <img id="foto-vorschau" class="foto-vorschau" style="display:none;" alt="Vorschau des aufgenommenen Zählerfotos">
+    </div>
+  <% } else { %>
+    <p class="meldung meldung-warnung-box">Die KI-Fotoerkennung ist derzeit nicht konfiguriert und deshalb deaktiviert. Die manuelle Erfassung unten funktioniert uneingeschränkt.</p>
+  <% } %>
+</div>
+
+<div class="karte">
+  <h2>Manuelle Erfassung</h2>
+  <% if (meters.length === 0) { %>
+    <p class="meldung meldung-warnung-box">Für Ihr Konto ist aktuell keine Zählergruppe zur Erfassung freigegeben. Bitte an einen Administrator wenden.</p>
+  <% } %>
+  <form method="post" action="/messwerte" class="formular" id="messwert-formular">
+    <label>Zähler
+      <select name="meter_id" id="meter_id" required <%= meters.length === 0 ? 'disabled' : '' %>>
+        <option value="">bitte wählen</option>
+        <% const gruppenNamen = [...new Set(meters.map(m => m.group_name || 'Ohne Gruppe'))]; %>
+        <% gruppenNamen.forEach(gruppe => { %>
+          <optgroup label="<%= gruppe %>">
+          <% meters.filter(m => (m.group_name || 'Ohne Gruppe') === gruppe).forEach(m => { %>
+            <option value="<%= m.id %>"><%= m.number %> (<%= m.anzeige_name %>)</option>
+          <% }) %>
+          </optgroup>
+        <% }) %>
+      </select>
+    </label>
+    <label>Datum
+      <input type="date" name="datum" id="datum" required>
+    </label>
+    <label><span id="wert-label-text">Zählerstand</span>
+      <input type="text" name="wert" id="wert" inputmode="decimal" required>
+    </label>
+    <label id="einspeisung-zeile" class="verborgen">Einspeisung (OBIS 2.8.0) (kWh) <span class="text-schwach">(optional)</span>
+      <input type="text" name="wert_einspeisung" id="wert_einspeisung" inputmode="decimal">
+    </label>
+    <label id="waerme-m3-zeile" class="verborgen">Volumen (m³)
+      <input type="text" name="wert_m3" id="wert_m3" inputmode="decimal">
+    </label>
+    <label>Bemerkung
+      <textarea name="bemerkung" rows="2"></textarea>
+    </label>
+    <input type="hidden" name="foto_temp_id" id="foto_temp_id" value="">
+    <input type="hidden" name="erfassungsweg" id="erfassungsweg" value="manuell">
+    <label class="inline" id="foto-speichern-zeile" style="display:none;">
+      <input type="checkbox" name="foto_speichern"> Foto zu diesem Messwert dauerhaft speichern
+    </label>
+    <button type="submit" id="messwert-speichern-knopf" <%= meters.length === 0 ? 'disabled' : '' %>>Messwert speichern</button>
+  </form>
+</div>
+
+<div class="karte">
+  <h2>Zuletzt erfasste Messwerte</h2>
+  <div class="tabelle-wrap">
+  <table class="tabelle">
+    <thead><tr><th>Datum</th><th>Zählerart</th><th>Zählernummer</th><th>Wert</th><th>Status</th><th>Bemerkung</th><th>Aktion</th></tr></thead>
+    <tbody>
+      <% letzte.forEach(r => { %>
+        <tr>
+          <td data-label="Datum"><%= new Date(r.reading_at).toLocaleDateString('de-DE') %></td>
+          <td data-label="Zählerart"><%= r.type_label_name %><%= r.strom_richtung ? (r.strom_richtung === 'verbrauch' ? ' (Verbrauch)' : ' (Einspeisung)') : '' %><%= r.waerme_teil ? (r.waerme_teil === 'kwh' ? ' (kWh)' : ' (m³)') : '' %></td>
+          <td data-label="Zählernummer"><%= r.meter_number %></td>
+          <td data-label="Wert"><%= formatWert(r.value, r.status) %> <%= r.unit %></td>
+          <td data-label="Status"><%= r.status %></td>
+          <td data-label="Bemerkung"><%= r.bemerkung || '' %></td>
+          <td data-label="Aktion"><% if (r.bearbeitbar) { %><a href="/messwerte/<%= r.id %>/bearbeiten"><%= user.role === 'admin' ? 'Bearbeiten' : 'Korrigieren' %></a><% } %></td>
+        </tr>
+      <% }) %>
+    </tbody>
+  </table>
+  </div>
+</div>
+
+<script>
+  document.getElementById('datum').value = new Date().toISOString().slice(0,10);
+  window.__ZAEHLER_LISTE__ = <%- JSON.stringify(meters.map(m => ({ id: m.id, number: String(m.number), typeKey: m.type_key, typeUnit: m.type_unit, waermeKombi: Boolean(m.waerme_kombi) }))) %>;
+</script>
+<script src="/static/js/messwerte.js"></script>
+<%- include('partials/footer') %>

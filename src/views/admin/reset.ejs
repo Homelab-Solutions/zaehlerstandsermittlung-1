@@ -1,0 +1,33 @@
+<%- include('../partials/header', { titel }) %>
+<h1>Datenbank zurücksetzen</h1>
+<% if (fehler) { %><p class="meldung meldung-fehler"><%= fehler %></p><% } %>
+
+<div class="karte meldung-warnung-box">
+  <p><strong>Achtung:</strong> Dieser Vorgang löscht unwiderruflich alle Zähler, Messwerte und gespeicherten Fotos. Benutzerkonten, Zählerarten-Konfiguration und Einstellungen bleiben erhalten.</p>
+  <p>Ablauf: 1) Export erzeugen und herunterladen. 2) Erst danach kann der Löschvorgang bestätigt werden.</p>
+</div>
+
+<div class="karte">
+  <h2>Schritt 1: Export</h2>
+  <form method="post" action="/admin/reset/export">
+    <button type="submit">Export jetzt erzeugen</button>
+  </form>
+  <% if (token) { %>
+    <p><a href="/admin/reset/download/<%= token %>" target="_blank">Export herunterladen</a> (bitte vor Schritt 2 öffnen/speichern)</p>
+  <% } %>
+</div>
+
+<% if (token) { %>
+<div class="karte">
+  <h2>Schritt 2: Bestätigen</h2>
+  <form method="post" action="/admin/reset/bestaetigen" class="formular">
+    <input type="hidden" name="token" value="<%= token %>">
+    <label>Bitte exakt "<%= bestaetigungstext %>" eingeben:
+      <input type="text" name="bestaetigungstext" required>
+    </label>
+    <button type="submit" class="knopf-gefahr">Daten jetzt endgültig löschen</button>
+  </form>
+  <% if (!heruntergeladen) { %><p class="text-schwach">Export bitte zuerst herunterladen.</p><% } %>
+</div>
+<% } %>
+<%- include('../partials/footer') %>

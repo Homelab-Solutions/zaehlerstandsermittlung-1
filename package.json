@@ -1,0 +1,33 @@
+{
+  "name": "zaehlerstandsermittlung-1",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Erfassung und Auswertung von Zaehlerstaenden (Haus mit Mietwohnung)",
+  "type": "commonjs",
+  "main": "src/server.js",
+  "scripts": {
+    "dev": "node src/server.js",
+    "start": "node src/server.js"
+  },
+  "dependencies": {
+    "archiver": "^5.3.2",
+    "bcryptjs": "^2.4.3",
+    "better-sqlite3": "^11.3.0",
+    "chart.js": "^4.4.4",
+    "connect-session-knex": "^4.0.2",
+    "csv-parse": "^5.5.6",
+    "csv-stringify": "^6.5.1",
+    "dotenv": "^16.4.5",
+    "ejs": "^3.1.10",
+    "exceljs": "^4.4.0",
+    "express": "^4.19.2",
+    "express-rate-limit": "^7.4.0",
+    "express-session": "^1.18.0",
+    "helmet": "^7.1.0",
+    "knex": "^3.1.0",
+    "multer": "^2.0.0",
+    "mysql2": "^3.11.0",
+    "nodemailer": "^6.9.14",
+    "unzipper": "^0.10.14"
+  }
+}
